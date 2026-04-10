@@ -1,6 +1,6 @@
 ---
 name: polpo-cloud
-description: Deploy and manage AI agents on Polpo Cloud using the CLI. Use when the user wants to deploy agents, manage API keys, configure LLM provider keys (BYOK), check project status, or any Polpo Cloud infrastructure task. Triggers on "polpo deploy", "polpo cloud", "polpo-cloud CLI", "deploy agent", "BYOK", "LLM keys", "polpo login".
+description: Deploy and manage AI agents on Polpo Cloud using the CLI. Use when the user wants to deploy agents, manage API keys, configure LLM provider keys (BYOK), check project status, or any Polpo Cloud infrastructure task. Triggers on "polpo deploy", "polpo cloud", "polpo CLI", "deploy agent", "BYOK", "LLM keys", "polpo login".
 ---
 
 # Polpo Cloud CLI
@@ -8,24 +8,34 @@ description: Deploy and manage AI agents on Polpo Cloud using the CLI. Use when 
 ## Install
 
 ```bash
-npm install -g @polpo-cloud/cli
+npm install -g polpo-ai
 ```
 
 ## Authentication
 
 ```bash
-# Login with API key (get from cloud.polpo.sh → API Keys)
-polpo-cloud login
-# Enter: API key, base URL (https://api.polpo.sh), project ID
+# Login via browser (recommended)
+polpo login
 
 # Verify
-polpo-cloud status
+polpo cloud-status
 
 # Logout
-polpo-cloud logout
+polpo logout
 ```
 
-Credentials stored at `~/.polpo-cloud/credentials.json`.
+### Non-interactive login
+
+For CI/CD, scripts, or when browser login is not available, authenticate with an API key.
+Get your key from polpo.sh → API Keys, then pass it via `--api-key` flag or `POLPO_API_KEY` env var.
+
+```bash
+polpo login --api-key <your-key>
+```
+
+**Do not hardcode API keys in source code or commit them to version control.**
+
+Credentials stored at `~/.polpo/credentials.json`.
 
 ## Deploy Agents
 
@@ -33,7 +43,7 @@ Deploy syncs local `.polpo/` config to the cloud project.
 
 ```bash
 # From project root (must have .polpo/ directory)
-polpo-cloud deploy
+polpo deploy
 ```
 
 This uploads:
@@ -41,52 +51,68 @@ This uploads:
 - Skills
 - Memory
 
+Creates the project automatically on first deploy if none is linked.
+
+## Managed AI Gateway
+
+Polpo includes a managed AI gateway with free credits — no LLM key setup needed to get started. Your agents can use any supported model out of the box.
+
 ## BYOK (Bring Your Own Key)
 
-Set LLM provider API keys per project. Keys are AES-256-GCM encrypted at rest.
+Optionally set your own LLM provider API keys per project. Keys are AES-256-GCM encrypted at rest.
 
 ```bash
-# Set a key
-polpo-cloud byok set --provider xai --key "xai-..."
-polpo-cloud byok set --provider openai --key "sk-..."
-polpo-cloud byok set --provider anthropic --key "sk-ant-..."
+# Set a key (interactive — prompts securely for the key value)
+polpo byok set <provider>
+
+# Non-interactive (pass key separately via --key flag)
+polpo byok set <provider> --key <your-key>
 
 # List keys (masked)
-polpo-cloud byok list
+polpo byok list
+
+# Delete a key
+polpo byok delete <provider>
 ```
 
 Supported providers: `openai`, `anthropic`, `xai`, `google`, `groq`, `openrouter`, `cerebras`, `mistral`.
+
+**Do not hardcode LLM keys in source code or commit them to version control.** You can also set keys via the dashboard at polpo.sh → LLM Keys.
 
 ## Project Management
 
 ```bash
 # List projects
-polpo-cloud projects
+polpo projects list
 
-# View project status
-polpo-cloud status
+# Create a project
+polpo projects create my-project
+
+# View cloud project status
+polpo cloud-status
 ```
 
 ## Stream Logs
 
 ```bash
 # Stream real-time logs from the project
-polpo-cloud logs
+polpo cloud-logs [--follow] [--tail 50]
 ```
 
 ## Workflow: First Deploy
 
-1. Sign up at `cloud.polpo.sh`
-2. Create a project in the dashboard
-3. Create an API key (copy it — shown once)
-4. `polpo-cloud login` with the API key
-5. `polpo-cloud byok set --provider xai --key "xai-..."` (or your LLM provider)
-6. Create agents via API or dashboard
-7. Use `POST /v1/chat/completions` with `agent: "name"` to chat
+1. Sign up at `polpo.sh`
+2. Create a workspace and project (onboarding handles this)
+3. `polpo login` (opens browser for approval)
+4. Create `.polpo/` directory with agent config
+5. `polpo deploy`
+6. Use `POST /v1/chat/completions` with `agent: "name"` to chat
 
-## Cloud Dashboard
+No LLM keys needed — the managed gateway covers you with free credits.
 
-Available at `cloud.polpo.sh` after signup:
+## Dashboard
+
+Available at `polpo.sh` after signup:
 - **Overview**: project stats
 - **Agents**: view/manage agent configs
 - **Sessions**: chat history with agents
@@ -94,12 +120,12 @@ Available at `cloud.polpo.sh` after signup:
 - **Memory**: project + per-agent memory
 - **Webhooks**: event notification endpoints
 - **API Keys**: manage data plane keys
-- **LLM Keys**: BYOK provider keys (global, per-project)
+- **LLM Keys**: BYOK provider keys (optional)
 - **Settings**: project configuration
 
 ## API Base URL
 
 - **Cloud**: `https://api.polpo.sh`
-- **Self-hosted**: `http://localhost:3000` (default `polpo serve` port)
+- **Local development**: `http://localhost:3890` (default `polpo start` port)
 
 See [references/cli-commands.md](references/cli-commands.md) for the full CLI reference.

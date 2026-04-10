@@ -22,7 +22,7 @@ Multiple agents, each with a focused role. Agents are assigned tasks based on ex
 { name: "coder", role: "Engineer", model: "xai:grok-4-fast", allowedTools: ["bash", "read", "write", "edit", "glob", "grep"] }
 
 // Careful reviewer (stronger model, read-only tools)
-{ name: "reviewer", role: "Code reviewer", model: "anthropic:claude-sonnet-4-5", allowedTools: ["read", "grep", "glob"] }
+{ name: "reviewer", role: "Code reviewer", model: "anthropic:claude-sonnet-4", allowedTools: ["read", "grep", "glob"] }
 
 // Research agent with web access
 { name: "researcher", role: "Technical researcher", model: "openai:gpt-4o", allowedTools: ["search_web", "http_fetch", "read", "write"] }
@@ -35,7 +35,7 @@ Use `reportsTo` to define escalation paths. When an agent is stuck or needs appr
 ```typescript
 { name: "junior", role: "Junior dev", model: "xai:grok-3-mini-fast", reportsTo: "senior" }
 { name: "senior", role: "Senior dev", model: "xai:grok-4-fast", reportsTo: "lead" }
-{ name: "lead", role: "Tech lead", model: "anthropic:claude-sonnet-4-5" }
+{ name: "lead", role: "Tech lead", model: "anthropic:claude-sonnet-4" }
 ```
 
 ## Agent with External Services
@@ -66,7 +66,7 @@ Control how much the agent "thinks" before responding.
 | `xhigh` | Research, novel problem solving |
 
 ```typescript
-{ name: "architect", reasoning: "high", model: "anthropic:claude-sonnet-4-5" }
+{ name: "architect", reasoning: "high", model: "anthropic:claude-sonnet-4" }
 { name: "formatter", reasoning: "off", model: "xai:grok-3-mini-fast" }
 ```
 

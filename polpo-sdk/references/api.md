@@ -1,8 +1,8 @@
 # Polpo API Endpoints
 
-Base URL: `https://api.polpo.sh` (cloud) or `http://localhost:3000` (self-hosted)
+Base URL: `https://api.polpo.sh` (cloud) or `http://localhost:3890` (local dev)
 
-Auth: `Authorization: Bearer sk_live_...`
+Auth: `Authorization: Bearer <your-api-key>`
 
 ## Completions
 | Method | Path | Description |

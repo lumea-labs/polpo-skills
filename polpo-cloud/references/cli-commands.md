@@ -1,85 +1,101 @@
 # Polpo Cloud CLI Commands
 
-## polpo-cloud login
+## polpo login
 
-Authenticate with the cloud API.
+Authenticate with Polpo Cloud.
 
 ```bash
-polpo-cloud login
-# Interactive: prompts for API key, base URL, project ID
+# Interactive — opens browser for approval (recommended)
+polpo login
 
-# Non-interactive
-polpo-cloud login --api-key sk_live_... --url https://api.polpo.sh --project <id>
+# Non-interactive (pass key separately via --api-key flag)
+polpo login --api-key <your-key>
 ```
 
-## polpo-cloud logout
+Get your key from polpo.sh → API Keys. Do not hardcode keys in source code.
+
+## polpo logout
 
 Clear stored credentials.
 
 ```bash
-polpo-cloud logout
+polpo logout
 ```
 
-## polpo-cloud status
+## polpo cloud-status
 
-Show project status: agents, tasks, connection info.
+Show cloud project status: agents, tasks, connection info.
 
 ```bash
-polpo-cloud status
+polpo cloud-status
 ```
 
-## polpo-cloud deploy
+## polpo deploy
 
-Sync local `.polpo/` configuration to the cloud project.
+Sync local `.polpo/` configuration to the cloud project. Creates the project automatically on first deploy if none is linked.
 
 ```bash
-polpo-cloud deploy
+polpo deploy [--dir .] [--yes] [--include-tasks] [--include-sessions] [--all]
 ```
 
 Uploads agent configs, skills, and memory from the local `.polpo/` directory.
 
-## polpo-cloud byok set
+## polpo byok set
 
-Set an LLM provider API key for the project.
+Set an LLM provider API key for the project. Optional — the managed gateway provides free credits by default.
 
 ```bash
-polpo-cloud byok set --provider <name> --key <api-key> [--label <label>]
+# Interactive — prompts securely for the key value
+polpo byok set <provider>
+
+# Non-interactive (pass key separately via --key flag)
+polpo byok set <provider> --key <your-key>
 ```
 
-Providers: `openai`, `anthropic`, `xai`, `google`, `groq`, `openrouter`, `cerebras`, `mistral`.
+Providers: `openai`, `anthropic`, `xai`, `google`, `groq`, `openrouter`, `cerebras`, `mistral`, `gateway`.
 
-## polpo-cloud byok list
+Do not hardcode keys in source code. You can also set keys via the dashboard at polpo.sh → LLM Keys.
+
+## polpo byok list
 
 List configured LLM keys (masked).
 
 ```bash
-polpo-cloud byok list
+polpo byok list
 ```
 
-## polpo-cloud projects
+## polpo byok delete
+
+Remove a provider key.
+
+```bash
+polpo byok delete <provider>
+```
+
+## polpo projects list
 
 List projects in the organization.
 
 ```bash
-polpo-cloud projects
+polpo projects list
 ```
 
-## polpo-cloud logs
+## polpo projects create
+
+Create a new project.
+
+```bash
+polpo projects create <name>
+```
+
+## polpo cloud-logs
 
 Stream real-time logs from the project.
 
 ```bash
-polpo-cloud logs
+polpo cloud-logs [--follow] [--tail 50]
 ```
 
 ## Credential Storage
 
-Credentials are stored at `~/.polpo-cloud/credentials.json`:
-
-```json
-{
-  "apiKey": "sk_live_...",
-  "baseUrl": "https://api.polpo.sh",
-  "projectId": "bdf1341b-..."
-}
-```
+Credentials are stored locally at `~/.polpo/credentials.json`. Never commit this file to version control.

@@ -16,9 +16,11 @@ npm install @polpo-ai/sdk
 ```typescript
 import { PolpoClient } from "@polpo-ai/sdk";
 
+// baseUrl is the root URL — SDK appends /v1/ internally.
+// Do NOT add /v1/ or /api/v1/ to baseUrl.
 const polpo = new PolpoClient({
-  baseUrl: "https://api.polpo.sh",  // or self-hosted: http://localhost:3000
-  apiKey: "sk_live_...",
+  baseUrl: "https://api.polpo.sh",  // local dev: http://localhost:3890
+  apiKey: process.env.POLPO_API_KEY,
 });
 ```
 
@@ -83,7 +85,7 @@ await polpo.addAgent({
 });
 
 // Update agent
-await polpo.updateAgent("reviewer", { model: "anthropic:claude-sonnet-4-5" });
+await polpo.updateAgent("reviewer", { model: "anthropic:claude-sonnet-4" });
 ```
 
 ## Memory
@@ -115,7 +117,7 @@ import { EventSourceManager } from "@polpo-ai/sdk";
 
 const sse = new EventSourceManager({
   baseUrl: "https://api.polpo.sh",
-  apiKey: "sk_live_...",
+  apiKey: process.env.POLPO_API_KEY,
 });
 
 sse.connect({ filter: "task:*" });

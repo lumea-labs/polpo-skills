@@ -127,7 +127,7 @@ interface Mission {
 
 Models use `provider:model` format:
 - `xai:grok-4-fast`
-- `anthropic:claude-sonnet-4-5`
+- `anthropic:claude-sonnet-4`
 - `openai:gpt-4o`
 - `google:gemini-2.0-flash`
 - `groq:llama-3.3-70b-versatile`

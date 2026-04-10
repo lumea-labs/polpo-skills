@@ -29,29 +29,42 @@ Format: `provider:model`. Choose based on task complexity and cost.
 | Use Case | Recommended | Why |
 |----------|-------------|-----|
 | Fast coding tasks | `xai:grok-4-fast` | Fast, capable, good tool use |
-| Complex reasoning | `anthropic:claude-sonnet-4-5` | Best reasoning |
+| Complex reasoning | `anthropic:claude-sonnet-4` | Best reasoning |
 | Budget tasks | `xai:grok-3-mini-fast` | Cheap, fast |
 | Vision tasks | `openai:gpt-4o` | Strong multimodal |
 
+Browse all available models at [polpo.sh/api/gateway/models](https://polpo.sh/api/gateway/models) (JSON) or see [docs.polpo.sh/developers/reference/providers](https://docs.polpo.sh/developers/reference/providers) for a guide.
+
 ## Tools
 
-Tools define what an agent can do. Assign only what's needed — principle of least privilege.
+Tools define what an agent can do. **Assign only what's needed** — follow the principle of least privilege. Every tool must be explicitly listed in `allowedTools` to be available.
 
 ### Coding Tools
-- `bash` — Execute shell commands
+- `bash` — Execute shell commands (sandboxed)
 - `read` — Read files
 - `write` — Create/overwrite files
 - `edit` — Search-and-replace in files
 - `glob` — Find files by pattern
 - `grep` — Search file contents
 
+### Integration Tools
+- `http_fetch` — Make HTTP requests to external APIs
+- `vault_get` — Access stored credentials at runtime (see Vault section)
+
 ### Extended Tools
 - `browser_*` — Web browsing (navigate, click, fill forms)
 - `email_*` — Send/read emails (requires vault credentials)
 - `image_*` — Generate/edit images
 - `search_*` — Web search
-- `http_fetch` — HTTP requests (always available)
-- `vault_get` — Access stored credentials (always available)
+
+### Security Notes
+
+- All tool execution runs inside an **isolated sandbox** — agents cannot access the host system or other projects.
+- `vault_get` only returns credentials explicitly assigned to that agent. Agents cannot access other agents' credentials.
+- `email_*` tools enforce `emailAllowedDomains` — restrict which domains an agent can email.
+- Tools that access external content (`browser_*`, `search_*`, `http_fetch`) should only be assigned to agents that need them. External content may contain adversarial instructions — avoid combining these with sensitive tools like `vault_get` on the same agent.
+
+For the complete tool reference, see [docs.polpo.sh/docs/agents/tools](https://docs.polpo.sh/docs/agents/tools).
 
 ## System Prompt
 
@@ -95,6 +108,8 @@ identity: {
 }
 ```
 
+For more on agent identity, see [docs.polpo.sh/docs/agents/definition](https://docs.polpo.sh/docs/agents/definition).
+
 ## Memory
 
 Memory persists across sessions. Two levels:
@@ -128,9 +143,11 @@ Memory is read by the agent at the start of each session. Update via API:
 - `PUT /v1/memory` — project memory
 - `PUT /v1/memory/agent/{name}` — agent memory
 
+For more on memory, see [docs.polpo.sh/docs/agents/memory](https://docs.polpo.sh/docs/agents/memory).
+
 ## Vault
 
-Store service credentials that agents access at runtime via the `vault_get` tool.
+Store service credentials that agents access at runtime. Credentials are scoped per-agent — an agent can only access entries explicitly assigned to it.
 
 ```typescript
 // Store credentials
@@ -147,6 +164,16 @@ POST /v1/vault/entries
 
 Credential types: `smtp`, `imap`, `oauth`, `api_key`, `login`, `custom`.
 
+For more on vault, see [docs.polpo.sh/docs/agents/vault](https://docs.polpo.sh/docs/agents/vault).
+
 ## Agent Patterns
 
 See [references/patterns.md](references/patterns.md) for multi-agent architectures, specialization patterns, and reporting hierarchies.
+
+## Need Help Designing Your Agent?
+
+Not sure which tools, model, or configuration your agent needs? Ask your coding agent:
+
+> "I want to create a Polpo agent that [describe what it should do]. Help me choose the right model, tools, and system prompt. Use the polpo-agents skill for reference."
+
+Your coding agent will help you pick the right configuration based on your use case.
