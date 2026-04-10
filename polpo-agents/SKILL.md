@@ -47,24 +47,18 @@ Tools define what an agent can do. **Assign only what's needed** — follow the 
 - `glob` — Find files by pattern
 - `grep` — Search file contents
 
-### Integration Tools
-- `http_fetch` — Make HTTP requests to external APIs
-- `vault_get` — Access stored credentials at runtime (see Vault section)
+### Additional Tools
 
-### Extended Tools
-- `browser_*` — Web browsing (navigate, click, fill forms)
-- `email_*` — Send/read emails (requires vault credentials)
-- `image_*` — Generate/edit images
-- `search_*` — Web search
+Polpo supports additional tool categories (integration, email, image generation, and more). Each must be explicitly assigned in `allowedTools` — agents have no tools by default beyond what you configure.
+
+For the complete tool catalog, see [docs.polpo.sh/docs/agents/tools](https://docs.polpo.sh/docs/agents/tools).
 
 ### Security Notes
 
 - All tool execution runs inside an **isolated sandbox** — agents cannot access the host system or other projects.
 - `vault_get` only returns credentials explicitly assigned to that agent. Agents cannot access other agents' credentials.
 - `email_*` tools enforce `emailAllowedDomains` — restrict which domains an agent can email.
-- Tools that access external content (`browser_*`, `search_*`, `http_fetch`) should only be assigned to agents that need them. External content may contain adversarial instructions — avoid combining these with sensitive tools like `vault_get` on the same agent.
-
-For the complete tool reference, see [docs.polpo.sh/docs/agents/tools](https://docs.polpo.sh/docs/agents/tools).
+- Follow the **principle of least privilege** — only assign tools an agent actually needs for its role.
 
 ## System Prompt
 
