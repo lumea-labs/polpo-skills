@@ -24,8 +24,8 @@ Multiple agents, each with a focused role. Agents are assigned tasks based on ex
 // Careful reviewer (stronger model, read-only tools)
 { name: "reviewer", role: "Code reviewer", model: "anthropic:claude-sonnet-4", allowedTools: ["read", "grep", "glob"] }
 
-// Analyst agent for data and documentation
-{ name: "analyst", role: "Technical analyst", model: "openai:gpt-4o", allowedTools: ["read", "grep", "glob", "write"] }
+// Research agent with web access
+{ name: "researcher", role: "Technical researcher", model: "openai:gpt-4o", allowedTools: ["search_web", "http_fetch", "read", "write"] }
 ```
 
 ## Reporting Hierarchy
@@ -47,7 +47,7 @@ Agent that interacts with external APIs via vault credentials.
   name: "emailer",
   role: "Email outreach agent",
   model: "xai:grok-4-fast",
-  allowedTools: ["email_send", "email_read", "write"],
+  allowedTools: ["email_send", "email_read", "http_fetch", "write"],
   emailAllowedDomains: ["company.com", "client.com"],  // restrict recipients
 }
 // + vault entry for email credentials
