@@ -8,8 +8,9 @@ Authenticate with Polpo Cloud.
 # Interactive — opens browser for approval (recommended)
 polpo login
 
-# Non-interactive (pass key separately via --api-key flag)
-polpo login --api-key <your-key>
+# Non-interactive — set env var first, then login
+export POLPO_API_KEY="..."
+polpo login
 ```
 
 Get your key from polpo.sh → API Keys. Do not hardcode keys in source code.
@@ -47,14 +48,11 @@ Set an LLM provider API key for the project. Optional — the managed gateway pr
 ```bash
 # Interactive — prompts securely for the key value
 polpo byok set <provider>
-
-# Non-interactive (pass key separately via --key flag)
-polpo byok set <provider> --key <your-key>
 ```
 
 Providers: `openai`, `anthropic`, `xai`, `google`, `groq`, `openrouter`, `cerebras`, `mistral`, `gateway`.
 
-Do not hardcode keys in source code. You can also set keys via the dashboard at polpo.sh → LLM Keys.
+You can also set keys via the dashboard at polpo.sh → LLM Keys. Do not hardcode keys in source code.
 
 ## polpo byok list
 

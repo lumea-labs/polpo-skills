@@ -26,11 +26,11 @@ polpo logout
 
 ### Non-interactive login
 
-For CI/CD, scripts, or when browser login is not available, authenticate with an API key.
-Get your key from polpo.sh → API Keys, then pass it via `--api-key` flag or `POLPO_API_KEY` env var.
+For CI/CD, scripts, or when browser login is not available, set the `POLPO_API_KEY` environment variable before running `polpo login`. Get your key from polpo.sh → API Keys.
 
 ```bash
-polpo login --api-key <your-key>
+export POLPO_API_KEY="..."
+polpo login
 ```
 
 **Do not hardcode API keys in source code or commit them to version control.**
@@ -65,9 +65,6 @@ Optionally set your own LLM provider API keys per project. Keys are AES-256-GCM 
 # Set a key (interactive — prompts securely for the key value)
 polpo byok set <provider>
 
-# Non-interactive (pass key separately via --key flag)
-polpo byok set <provider> --key <your-key>
-
 # List keys (masked)
 polpo byok list
 
@@ -77,7 +74,7 @@ polpo byok delete <provider>
 
 Supported providers: `openai`, `anthropic`, `xai`, `google`, `groq`, `openrouter`, `cerebras`, `mistral`.
 
-**Do not hardcode LLM keys in source code or commit them to version control.** You can also set keys via the dashboard at polpo.sh → LLM Keys.
+You can also set keys via the dashboard at polpo.sh → LLM Keys. **Do not hardcode LLM keys in source code or commit them to version control.**
 
 ## Project Management
 
