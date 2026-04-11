@@ -13,7 +13,7 @@ An agent is defined by its `AgentConfig`. Create via API or dashboard.
 {
   name: "coder",                              // unique identifier
   role: "Senior Full-Stack Engineer",         // human-readable role description
-  model: "xai:grok-4-fast",                  // provider:model format
+  model: "xai/grok-4-fast",                   // provider/model format
   allowedTools: ["bash", "read", "write", "edit", "glob", "grep"],
   systemPrompt: "You are a senior engineer. Write clean, tested code.",
   maxTurns: 150,                              // max LLM turns per session
@@ -24,14 +24,14 @@ An agent is defined by its `AgentConfig`. Create via API or dashboard.
 
 ## Model Selection
 
-Format: `provider:model`. Choose based on task complexity and cost.
+Format: `provider/model`. Choose based on task complexity and cost.
 
 | Use Case | Recommended | Why |
 |----------|-------------|-----|
-| Fast coding tasks | `xai:grok-4-fast` | Fast, capable, good tool use |
-| Complex reasoning | `anthropic:claude-sonnet-4` | Best reasoning |
-| Budget tasks | `xai:grok-3-mini-fast` | Cheap, fast |
-| Vision tasks | `openai:gpt-4o` | Strong multimodal |
+| Fast coding tasks | `xai/grok-4-fast` | Fast, capable, good tool use |
+| Complex reasoning | `anthropic/claude-sonnet-4` | Best reasoning |
+| Budget tasks | `xai/grok-3-mini-fast` | Cheap, fast |
+| Vision tasks | `openai/gpt-4o` | Strong multimodal |
 
 Browse all available models at [polpo.sh/api/gateway/models](https://polpo.sh/api/gateway/models) (JSON) or see [docs.polpo.sh/developers/reference/providers](https://docs.polpo.sh/developers/reference/providers) for a guide.
 

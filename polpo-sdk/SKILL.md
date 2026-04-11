@@ -79,13 +79,13 @@ const agents = await polpo.getAgents();
 await polpo.addAgent({
   name: "reviewer",
   role: "Code reviewer",
-  model: "xai:grok-4-fast",
+  model: "xai/grok-4-fast",
   allowedTools: ["bash", "read", "grep"],
   systemPrompt: "You review code for bugs and security issues.",
 });
 
 // Update agent
-await polpo.updateAgent("reviewer", { model: "anthropic:claude-sonnet-4" });
+await polpo.updateAgent("reviewer", { model: "anthropic/claude-sonnet-4" });
 ```
 
 ## Memory

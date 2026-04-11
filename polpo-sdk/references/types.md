@@ -45,7 +45,7 @@ interface ChatCompletionChunk {
 interface AgentConfig {
   name: string;
   role?: string;
-  model?: string;                    // "provider:model" e.g. "xai:grok-4-fast"
+  model?: string;                    // "provider/model" e.g. "xai/grok-4-fast"
   allowedTools?: string[];           // ["bash", "read", "write", "edit", "glob", "grep"]
   systemPrompt?: string;
   skills?: string[];
@@ -125,9 +125,9 @@ interface Mission {
 
 ## Model Format
 
-Models use `provider:model` format:
-- `xai:grok-4-fast`
-- `anthropic:claude-sonnet-4`
-- `openai:gpt-4o`
-- `google:gemini-2.0-flash`
-- `groq:llama-3.3-70b-versatile`
+Models use `provider/model` format:
+- `xai/grok-4-fast`
+- `anthropic/claude-sonnet-4`
+- `openai/gpt-4o`
+- `google/gemini-2.0-flash`
+- `groq/llama-3.3-70b-versatile`

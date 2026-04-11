@@ -8,7 +8,7 @@ One agent, one job. Start here.
 {
   name: "coder",
   role: "Full-stack engineer",
-  model: "xai:grok-4-fast",
+  model: "xai/grok-4-fast",
   allowedTools: ["bash", "read", "write", "edit", "glob", "grep"],
 }
 ```
@@ -19,13 +19,13 @@ Multiple agents, each with a focused role. Agents are assigned tasks based on ex
 
 ```typescript
 // Fast coder for implementation
-{ name: "coder", role: "Engineer", model: "xai:grok-4-fast", allowedTools: ["bash", "read", "write", "edit", "glob", "grep"] }
+{ name: "coder", role: "Engineer", model: "xai/grok-4-fast", allowedTools: ["bash", "read", "write", "edit", "glob", "grep"] }
 
 // Careful reviewer (stronger model, read-only tools)
-{ name: "reviewer", role: "Code reviewer", model: "anthropic:claude-sonnet-4", allowedTools: ["read", "grep", "glob"] }
+{ name: "reviewer", role: "Code reviewer", model: "anthropic/claude-sonnet-4", allowedTools: ["read", "grep", "glob"] }
 
 // Analyst agent for data and documentation
-{ name: "analyst", role: "Technical analyst", model: "openai:gpt-4o", allowedTools: ["read", "grep", "glob", "write"] }
+{ name: "analyst", role: "Technical analyst", model: "openai/gpt-4o", allowedTools: ["read", "grep", "glob", "write"] }
 ```
 
 ## Reporting Hierarchy
@@ -33,9 +33,9 @@ Multiple agents, each with a focused role. Agents are assigned tasks based on ex
 Use `reportsTo` to define escalation paths. When an agent is stuck or needs approval, it escalates to its manager.
 
 ```typescript
-{ name: "junior", role: "Junior dev", model: "xai:grok-3-mini-fast", reportsTo: "senior" }
-{ name: "senior", role: "Senior dev", model: "xai:grok-4-fast", reportsTo: "lead" }
-{ name: "lead", role: "Tech lead", model: "anthropic:claude-sonnet-4" }
+{ name: "junior", role: "Junior dev", model: "xai/grok-3-mini-fast", reportsTo: "senior" }
+{ name: "senior", role: "Senior dev", model: "xai/grok-4-fast", reportsTo: "lead" }
+{ name: "lead", role: "Tech lead", model: "anthropic/claude-sonnet-4" }
 ```
 
 ## Agent with External Services
@@ -46,7 +46,7 @@ Agent that interacts with external APIs via vault credentials.
 {
   name: "emailer",
   role: "Email outreach agent",
-  model: "xai:grok-4-fast",
+  model: "xai/grok-4-fast",
   allowedTools: ["email_send", "email_read", "write"],
   emailAllowedDomains: ["company.com", "client.com"],  // restrict recipients
 }
@@ -66,8 +66,8 @@ Control how much the agent "thinks" before responding.
 | `xhigh` | Research, novel problem solving |
 
 ```typescript
-{ name: "architect", reasoning: "high", model: "anthropic:claude-sonnet-4" }
-{ name: "formatter", reasoning: "off", model: "xai:grok-3-mini-fast" }
+{ name: "architect", reasoning: "high", model: "anthropic/claude-sonnet-4" }
+{ name: "formatter", reasoning: "off", model: "xai/grok-3-mini-fast" }
 ```
 
 ## Volatile Agents
