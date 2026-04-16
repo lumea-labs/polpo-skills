@@ -1,5 +1,5 @@
 ---
-name: polpo-ui
+name: polpo-react
 description: Build AI agent interfaces with Polpo UI — composable React chat components, CLI tools, and starter templates. Use when the user wants to create a chat app, add chat components, install @polpo-ai/chat, scaffold a Polpo project, configure theming/dark mode, use ChatInput, ChatMessage, ChatSessionList, or any Polpo UI component. Triggers on "polpo ui", "chat UI", "chat component", "@polpo-ai/chat", "@polpo-ai/ui", "create-polpo-app", "chat input", "session list", "agent selector", "chat interface", "polpo chat", "chat widget", "multi-agent".
 ---
 
