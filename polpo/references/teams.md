@@ -1,46 +1,121 @@
 # Teams
 
-Named groups of agents. Defined in `.polpo/teams.json`, agents reference teams via `teamName` in `agents.json`.
+Teams group agents by function. Each agent belongs to exactly one team. Teams are surfaced in the dashboard, in agent prompts (peer context), and in mission team assignments.
 
-## teams.json Format
+## File layout
 
-```json
-[
-  { "name": "default", "description": "Default team" },
-  { "name": "qa-team", "description": "Quality assurance specialists" }
-]
-```
-
-## Linking Agents to Teams
-
-In `agents.json`, each entry wraps an agent with its team:
+`.polpo/teams.json` — array of team objects:
 
 ```json
 [
-  { "agent": { "name": "coder", ... }, "teamName": "default" },
-  { "agent": { "name": "reviewer", ... }, "teamName": "qa-team" }
+  { "name": "default",    "description": "Default team" },
+  { "name": "engineering","description": "Backend engineers and code reviewers" },
+  { "name": "product",    "description": "Product managers and designers" }
 ]
 ```
 
-## Multi-Team Architecture
-
-- One project can have N teams
-- Agents are assigned to exactly one team
-- Teams enable organizational grouping (frontend-team, backend-team, qa-team)
-- Orchestrator can route tasks to agents based on team
-
-## Volatile Agents
-
-Agents with `volatile: true` are temporary — created for a mission, auto-deleted after:
-
-```json
-{ "agent": { "name": "temp-analyst", "volatile": true, "missionGroup": "q4-report" }, "teamName": "default" }
+Schema (`AddTeamSchema`):
+```typescript
+{ name: string, description?: string }
 ```
 
-## Helpers (source code)
+## Assigning agents to teams
 
-- `getAllAgents(teams)` — flatten all agents across teams
-- `findAgent(teams, name)` — search by name
-- `findAgentTeam(teams, name)` — find containing team
+In `agents.json`, each entry is a `{ agent, teamName }` wrapper:
 
-Source: `packages/core/src/types.ts`
+```json
+[
+  {
+    "agent": { "name": "pm", "role": "Product manager", "model": "..." },
+    "teamName": "product"
+  },
+  {
+    "agent": { "name": "engineer", "role": "Backend engineer", "model": "..." },
+    "teamName": "engineering"
+  }
+]
+```
+
+If `teamName` is omitted, the agent lands in `"default"`.
+
+## API endpoints
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| GET | `/v1/agents/teams` | — | `Team[]` (with member agents) |
+| GET | `/v1/agents/team?name=<name>` | — | single `Team` or null |
+| POST | `/v1/agents/teams` | `{name, description?}` | `{added: true}` |
+| PATCH | `/v1/agents/team` | `{oldName, name, description?}` | renamed `Team` |
+| DELETE | `/v1/agents/teams/{name}` | — | `{removed: true}` |
+
+**Path quirk for rename**: the PATCH route is `/v1/agents/team` (singular `/team`), not `/v1/agents/teams/{name}`. The team to rename is identified by `oldName` in the body.
+
+### Examples
+
+```bash
+# List teams
+curl -H "Authorization: Bearer $POLPO_API_KEY" \
+  https://my-project.polpo.cloud/v1/agents/teams
+
+# Create a team
+curl -X POST https://my-project.polpo.cloud/v1/agents/teams \
+  -H "Authorization: Bearer $POLPO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"data-science","description":"ML engineers and analysts"}'
+
+# Rename
+curl -X PATCH https://my-project.polpo.cloud/v1/agents/team \
+  -H "Authorization: Bearer $POLPO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"oldName":"data-science","name":"ml-engineering","description":"ML team"}'
+
+# Delete (also unassigns its agents back to default)
+curl -X DELETE https://my-project.polpo.cloud/v1/agents/teams/data-science \
+  -H "Authorization: Bearer $POLPO_API_KEY"
+```
+
+## Worked example — multi-agent
+
+```json
+// teams.json
+[
+  { "name": "engineering", "description": "Engineering team — builds and reviews code" },
+  { "name": "product",     "description": "Product team — plans features and writes specs" }
+]
+
+// agents.json
+[
+  {
+    "agent": {
+      "name": "product-manager",
+      "role": "Product manager — writes specs"
+    },
+    "teamName": "product"
+  },
+  {
+    "agent": {
+      "name": "backend-engineer",
+      "role": "Backend engineer — implements specs",
+      "reportsTo": "product-manager"
+    },
+    "teamName": "engineering"
+  },
+  {
+    "agent": {
+      "name": "reviewer",
+      "role": "Code reviewer — quality gate",
+      "reportsTo": "backend-engineer"
+    },
+    "teamName": "engineering"
+  }
+]
+```
+
+The `reportsTo` field is metadata (escalation hint for the agent) — Polpo doesn't enforce it. The dashboard surfaces it in team views.
+
+## Common pitfalls
+
+- **Wrong path for rename** — use `PATCH /v1/agents/team` (singular), not `/v1/agents/teams/{name}`.
+- **Team name as identifier** — teams are identified by `name`, not UUID. To rename, use the rename endpoint above (it updates references too).
+- **Deleting a team with agents** — agents are reassigned to `default`. Make sure `default` exists.
+- **Duplicate team names** — `name` is the primary key. Re-POSTing a team with an existing name will be rejected.
