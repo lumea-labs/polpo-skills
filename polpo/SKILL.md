@@ -5,34 +5,38 @@ description: Build production AI agents with Polpo — the open composable backe
 
 # Polpo
 
-Open composable backend for agents with integrated sandbox runtime, tasks and workflows, and AI Gateway. Agents are defined as config, deployed to isolated sandboxes, and called via an OpenAI-compatible API.
+Open composable backend for AI agents. Agents are defined as config, deployed to isolated sandboxes, and called via an OpenAI-compatible API. Use Polpo when you need multiple specialized agents (PM + engineer + reviewer, or analyst + researcher + writer) to collaborate on real work: feature specs, code, content pipelines, data processing.
 
-Never guess about Polpo internals — use this skill and reference files. When this skill doesn't cover something, follow the lookup chain at the bottom.
+Never guess about Polpo internals — use this skill and the reference files. When this skill doesn't cover something, follow the lookup chain at the bottom.
 
 ## Project Filesystem
 
-Every Polpo project lives in a `.polpo/` directory. Three separate config files:
+Every Polpo project lives in a `.polpo/` directory.
 
 ```
-.polpo/
-├── polpo.json              # Project link config (name, slug, projectId)
-├── agents.json             # Agent definitions (array of wrapped configs)
-├── teams.json              # Team definitions (array of {name, description})
-├── memory.md               # Project-level shared memory (all agents read this)
-├── memory/                 # Per-agent memory files
-│   └── <agent-name>.md
-├── skills/                 # Project-local skill packs
-│   └── my-skill/
-│       └── SKILL.md
-├── playbooks/              # Reusable mission templates (YAML)
-├── missions/               # Mission definitions
-└── .env.local.example      # Env template (POLPO_API_KEY, POLPO_API_URL)
+my-project/
+├── .polpo/
+│   ├── polpo.json              # Project link config (name, slug, projectId)
+│   ├── agents.json             # Array of [{ agent: AgentConfig, teamName }]
+│   ├── teams.json              # Array of [{ name, description }]
+│   ├── memory.md               # Shared project memory — injected into every agent's prompt
+│   ├── memory/                 # Per-agent memory files
+│   │   └── <agent-name>.md     # Filename MUST match agent.name exactly
+│   ├── vault.enc               # Encrypted credentials bundle (AES-256-GCM)
+│   ├── skills/                 # Custom skill packs
+│   │   └── <skill-name>/
+│   │       └── SKILL.md        # YAML frontmatter + markdown body
+│   ├── missions/               # Multi-task workflow definitions
+│   │   └── <mission-name>.json
+│   ├── tasks/                  # Standalone task files (opt-in deploy)
+│   │   └── <task-name>.json
+│   ├── playbooks/              # Reusable mission templates
+│   ├── schedules/              # Cron-scheduled missions
+│   └── output/                 # Agent-produced files at runtime
+└── .env.local                  # POLPO_API_KEY, POLPO_URL (project-scoped)
 ```
 
-### polpo.json — Project link
-
-Created by `polpo create` or `polpo link`. Links the local folder to a cloud project:
-
+### polpo.json
 ```json
 {
   "project": "My Project",
@@ -41,155 +45,116 @@ Created by `polpo create` or `polpo link`. Links the local folder to a cloud pro
 }
 ```
 
-### agents.json — Agent definitions
-
-Array of wrapped agent configs. Each entry pairs an agent with a team:
-
+### agents.json (array of wrapped configs)
 ```json
 [
   {
     "agent": {
-      "name": "coder",
-      "role": "Senior Engineer",
-      "model": "xai/grok-4-fast",
-      "systemPrompt": "You are a senior engineer. Write clean, tested code.",
-      "allowedTools": ["bash", "read", "write", "edit", "glob", "grep"],
-      "reasoning": "medium"
+      "name": "researcher",
+      "role": "Research specialist",
+      "model": "xai/grok-4.1-fast-non-reasoning",
+      "systemPrompt": "You are a meticulous researcher...",
+      "allowedTools": ["read", "write", "search_*", "browser_*", "memory_*"]
     },
     "teamName": "default"
   }
 ]
 ```
 
-For the complete AgentConfig field reference, read [references/agent-config.md](references/agent-config.md).
+See `references/agent-config.md` for every available field.
 
-### teams.json — Team definitions
+## Core CLI Commands
 
-```json
-[
-  { "name": "default", "description": "Default team" }
-]
-```
-
-## Core Concepts
-
-| Concept | What it is |
-|---------|-----------|
-| **Agent** | AI entity with model, tools, prompt, identity. Defined in `agents.json`. |
-| **Team** | Named group of agents. Defined in `teams.json`. |
-| **Task** | Unit of work assigned to an agent. Status lifecycle, expectations, retry policy. |
-| **Mission** | Multi-task workflow. Can be scheduled (cron), has checkpoints and quality gates. |
-| **Memory** | Persistent text context. Project-level (`memory.md`) or agent-level (`memory/<name>.md`). Auto-injected into system prompt. |
-| **Vault** | Encrypted per-agent credential store. Agents access via `vault_get` tool. |
-| **Skill** | A SKILL.md file teaching an agent domain knowledge. Injected into system prompt. |
-| **Tool** | A capability an agent can invoke. Must be whitelisted in `allowedTools`. |
-
-## Model Selection
-
-Format: `provider/model-name`.
-
-| Use Case | Model | Why |
-|----------|-------|-----|
-| Fast coding | `xai/grok-4-fast` | Fast, strong tool use |
-| Complex reasoning | `anthropic/claude-sonnet-4` | Best reasoning |
-| Budget tasks | `xai/grok-3-mini-fast` | Cheap, fast |
-| Vision/multimodal | `openai/gpt-4o` | Strong multimodal |
-
-## Tools
-
-58 tools across 10 categories. Agents have NO tools by default — each must be explicitly listed in `allowedTools`. Use glob patterns for categories: `"browser_*"`, `"email_*"`.
-
-**Coding:** `bash`, `read`, `write`, `edit`, `glob`, `grep`
-**Files/HTTP:** `ls`, `http_fetch`, `http_download`, `register_outcome`
-**Documents:** `pdf_*` (4), `excel_*` (4), `docx_*` (2)
-**Communication:** `email_*` (8), `phone_*` (7)
-**Browser:** `browser_*` (17 — full Playwright automation)
-**Media:** `image_generate`, `image_analyze`, `video_generate`, `audio_transcribe`, `audio_speak`
-**Search:** `search_web`, `search_find_similar`
-**Agent systems:** `vault_get`, `vault_list`, `memory_*` (4)
-
-For the complete tool catalog with descriptions, read [references/tools.md](references/tools.md).
-
-## System Prompt
-
-Keep it focused — Claude is already smart.
-
-```
-You are {name}, a {role}.
-{Core instructions — what to do, how to approach it}
-{Constraints — what NOT to do}
-{Output format if relevant}
-```
-
-## CLI Commands
-
-| Command | What it does |
-|---------|-------------|
-| `polpo login` | Authenticate (device-code browser flow) |
-| `polpo logout` | Sign out |
-| `polpo create` | Interactive wizard: create project + scaffold .polpo/ |
-| `polpo link --project-id <uuid>` | Bind current directory to existing project |
-| `polpo deploy` | Push .polpo/ to the cloud |
-| `polpo install --client <agents>` | Install Polpo skills for coding agents (auth + skills) |
-| `polpo status` | Deployment status |
-| `polpo logs` | Cloud execution logs |
-| `polpo models` | List available models |
-| `polpo byok` | Bring-your-own-key for LLM providers |
-| `polpo projects` | List/manage projects |
-| `polpo orgs` | Organization management |
-| `polpo whoami` | Show authenticated user |
-| `polpo update` | Self-update CLI |
-
-## Deployment Flow
-
-1. Edit `.polpo/agents.json` (agent definitions)
-2. Edit `.polpo/teams.json` (team structure)
-3. `polpo deploy` → validates + pushes to cloud
-4. Cloud provisions isolated sandbox + per-project database
-5. Call agents via `POST {slug}.polpo.cloud/v1/chat/completions`
+### `polpo login`
+Browser-based device-code auth. Stores credentials locally.
 
 ```bash
-# One-time setup
 polpo login
-polpo link --project-id <uuid>
-
-# Edit → deploy cycle
-vim .polpo/agents.json
-polpo deploy
 ```
 
-## Calling Agents
+### `polpo create`
+Interactive wizard: create a cloud project + scaffold local `.polpo/`. Optionally seed example scenarios (data analyst, marketing researcher, product manager).
 
-API is OpenAI-compatible. Two modes:
-
-**Agent-direct** (specify which agent):
 ```bash
-curl https://{slug}.polpo.cloud/v1/chat/completions \
-  -H "Authorization: Bearer $POLPO_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "model": "polpo", "agent": "coder", "stream": true,
-        "messages": [{"role":"user","content":"Hello"}] }'
+polpo create
+polpo create --name my-app --template blank --scenario data-analyst -y
 ```
 
-**Orchestrator** (let Polpo route to the right agent): omit the `"agent"` field.
+### `polpo link`
+Attach an existing directory to an existing cloud project. Pulls current agents/teams/memory down.
 
-## Detailed References
+```bash
+polpo link --project-id <uuid>
+```
 
-Read only when you need depth on a specific topic:
+### `polpo install`
+Install coding-agent skills (Cursor, Claude Code, Windsurf, etc) without scaffolding a project.
 
-- **[Agent Config Schema](references/agent-config.md)** — every field in AgentConfig
-- **[Tool Catalog](references/tools.md)** — all 58 tools with descriptions
-- **[Memory System](references/memory.md)** — project vs agent memory, API, auto-accumulation
-- **[Vault System](references/vault.md)** — credential types, scoping, resolution chain
-- **[Teams](references/teams.md)** — team structure, multi-team, volatile agents
-- **[Tasks & Missions](references/tasks-missions.md)** — lifecycle, expectations, retry, scheduling
-- **[Agent Patterns](references/patterns.md)** — multi-agent architectures, specialization
-- **[API Endpoints](references/api-endpoints.md)** — all server routes
+```bash
+polpo install                          # interactive, auto-detects coding agents
+polpo install --client claude-code     # specific agent only
+polpo install --scope global           # install globally vs project-local
+```
 
-## Information Lookup Chain
+### `polpo deploy`
+Sync local `.polpo/` to the cloud. Default scope: agents, teams, memory, vault, missions, playbooks, schedules, skills. Use flags for opt-in resources.
 
-When this skill doesn't answer:
+```bash
+polpo deploy                       # default scope
+polpo deploy --include-tasks       # also push standalone tasks
+polpo deploy --include-sessions    # also push chat session history
+polpo deploy --all                 # everything
+polpo deploy --force               # override conflicts without prompting
+polpo deploy -y                    # auto-accept all prompts
+```
 
-1. **Search the source code** first — grep/read in the Polpo OSS repo. Core types: `packages/core/src/types.ts`. Tools: `packages/tools/src/`. Routes: `packages/server/src/routes/`. CLI: `packages/cli/src/commands/`.
-2. **Check docs.polpo.sh** only if source doesn't answer — crawl structure first (`/docs/`, `/api-reference/`), then follow relevant links.
-3. **Never guess** about Polpo internals. If unsure, say so.
+Behavior: for each resource, CLI fetches existing remote, compares against local, and:
+- If new → POST (create)
+- If exists and identical → skip
+- If differs → PATCH (update) — interactive prompt without `--force`
+
+### `polpo cloud-logs`
+Tail the project's logs from the cloud.
+
+```bash
+polpo cloud-logs                   # last N entries
+polpo cloud-logs --follow          # stream live via SSE
+```
+
+### `polpo projects list`
+List your projects across organizations.
+
+```bash
+polpo projects list
+polpo projects list --org <org-id>
+```
+
+### `polpo whoami`
+Show the current authenticated user + org context.
+
+```bash
+polpo whoami
+```
+
+## Agent Runtime Model
+
+At deploy time, Polpo registers each agent from `agents.json` on the cloud. When a request arrives:
+
+1. **Agent lookup** by name (not UUID).
+2. **System prompt assembly**: base role + custom `systemPrompt` + injected shared memory + tool docs + skill content.
+3. **Tool resolution**: `allowedTools` filtered against the canonical catalog (see `references/tools.md`). Wildcards (`browser_*`, `search_*`, `memory_*`) expand to their category. Memory tools (`memory_get`, `memory_save`, `memory_append`, `memory_update`) need a memory store and an agent name to scope access.
+4. **Vault binding**: credentials from `.polpo/vault.enc` are decrypted just-in-time and exposed via `vault_get` / `vault_list` tools — agent never sees raw values.
+5. **Model routing**: `agent.model` resolves via Vercel AI Gateway (e.g. `xai/grok-4.1-fast-non-reasoning`, `anthropic/claude-sonnet-4-5`, `openai/gpt-4o`).
+6. **Sandboxed execution**: tools run inside an isolated sandbox; agent output flows back as SSE.
+
+## Where to look next
+
+- **Agent config** (`references/agent-config.md`): every `AgentConfig` field, with examples.
+- **Tools** (`references/tools.md`): full catalog + wildcard patterns.
+- **Tasks & missions** (`references/tasks-missions.md`): task lifecycle, mission documents, atomic edits.
+- **Memory** (`references/memory.md`): shared + per-agent memory layout.
+- **Teams** (`references/teams.md`): teams.json shape + management endpoints.
+- **Vault** (`references/vault.md`): encrypted credentials + supported services.
+- **Patterns** (`references/patterns.md`): 6 worked multi-agent architectures.
+- **API endpoints** (`references/api-endpoints.md`): full REST surface with curl examples.
+- **Public docs**: `https://docs.polpo.sh` — crawl `/docs/`, `/api-reference/` first.

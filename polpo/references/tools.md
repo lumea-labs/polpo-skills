@@ -1,130 +1,181 @@
-# Polpo Tool Catalog
+# Tool Catalog
 
-58 tools across 10 categories. Assign via `allowedTools` in agent config.
-Glob patterns supported: `"browser_*"` assigns all 17 browser tools.
+50+ built-in tools across 12 categories. Enable via the agent's `allowedTools` field — supports exact names (`browser_navigate`) and category wildcards (`browser_*`), plus the global `"*"`.
 
-## Coding Tools (6)
-| Tool | Description |
-|------|-------------|
-| `bash` | Execute shell commands in sandboxed environment |
-| `read` | Read file contents with line numbers |
-| `write` | Create or overwrite a file |
-| `edit` | Search-and-replace within a file (regex-style) |
-| `glob` | Find files matching a glob pattern |
-| `grep` | Search file contents with regex |
+When a tool is in `allowedTools`, its docs are auto-injected into the agent's system prompt so the LLM knows the interface.
 
-## File & HTTP Tools (4)
-| Tool | Description |
-|------|-------------|
-| `ls` | List directory contents |
-| `http_fetch` | HTTP GET, returns JSON or text |
-| `http_download` | Download HTTP response to a file |
-| `register_outcome` | Declare task deliverables (files created/edited) |
+## Core (always loaded)
 
-## PDF Tools (4) — `"pdf_*"`
-| Tool | Description |
-|------|-------------|
-| `pdf_read` | Extract text from PDF pages |
-| `pdf_create` | Create a PDF from text/HTML |
-| `pdf_merge` | Merge multiple PDFs into one |
-| `pdf_info` | Get PDF metadata (pages, size, etc.) |
+| Tool | What it does | Key params |
+|---|---|---|
+| `read` | Read file (line-numbered) | `path`, `offset?`, `limit?` |
+| `write` | Create/overwrite a file | `path`, `content` |
+| `edit` | Replace text in a file | `path`, `old_text`, `new_text` |
+| `bash` | Run a shell command | `command`, `timeout?` |
+| `glob` | Find files by pattern | `pattern`, `path?` |
+| `grep` | Search code with regex (PCRE) | `pattern`, `path?`, `include?` |
+| `ls` | List a directory | `path` |
 
-## Excel Tools (4) — `"excel_*"`
-| Tool | Description |
-|------|-------------|
-| `excel_read` | Read spreadsheet data (sheets, cells, ranges) |
-| `excel_write` | Create or modify spreadsheets |
-| `excel_query` | Query spreadsheet data with SQL-like syntax |
-| `excel_info` | Get workbook metadata (sheets, dimensions) |
+Also always loaded:
+| `http_fetch` | GET/POST/PUT/DELETE with SSRF guard | `url`, `method?`, `headers?`, `body?` |
+| `http_download` | Download file from URL | `url`, `path` |
+| `vault_get` | Retrieve a credential | `service`, `key?` |
+| `vault_list` | List vault services available | — |
 
-## DOCX Tools (2) — `"docx_*"`
-| Tool | Description |
-|------|-------------|
-| `docx_read` | Extract text and structure from Word documents |
-| `docx_create` | Create Word documents from content |
+## Browser (18 tools — wildcard `browser_*`)
 
-## Email Tools (8) — `"email_*"`
-Requires vault credentials (SMTP/IMAP). Respects `emailAllowedDomains`.
+Powered by `agent-browser`. Session-isolated, profile-persistent (`browserProfile` field on agent).
 
-| Tool | Description |
-|------|-------------|
-| `email_send` | Send an email (text or HTML) |
-| `email_draft` | Create a draft without sending |
-| `email_verify` | Verify an email address is deliverable |
-| `email_list` | List emails in a mailbox folder |
-| `email_read` | Read a specific email by ID |
-| `email_search` | Search emails by query |
-| `email_count` | Count emails matching criteria |
-| `email_download_attachment` | Save an email attachment to disk |
+`browser_navigate`, `browser_snapshot`, `browser_click`, `browser_fill`, `browser_type`, `browser_press`, `browser_screenshot`, `browser_get`, `browser_select`, `browser_hover`, `browser_scroll`, `browser_wait`, `browser_eval`, `browser_close`, `browser_back`, `browser_forward`, `browser_reload`, `browser_tabs`
 
-## Phone Tools (7) — `"phone_*"`
-Requires vault credentials for telephony provider.
+Common workflow:
+1. `browser_navigate` to URL
+2. `browser_snapshot` to inspect ARIA tree
+3. `browser_click` / `browser_type` to interact
+4. `browser_wait` for async loads
+5. `browser_screenshot` for visual verification
 
-| Tool | Description |
-|------|-------------|
-| `phone_call` | Initiate an outbound phone call |
-| `phone_hangup` | End an active call |
-| `phone_list_calls` | List recent calls |
-| `phone_get_call` | Get details of a specific call |
-| `phone_setup_inbound` | Configure inbound call handling |
-| `phone_get_inbound_config` | Read current inbound config |
-| `phone_disable_inbound` | Disable inbound call handling |
+## HTTP (2 tools — wildcard `http_*`)
 
-## Media Tools (5)
-| Tool | Pattern | Description |
-|------|---------|-------------|
-| `image_generate` | `"image_*"` | Generate images from text prompts |
-| `image_analyze` | `"image_*"` | Analyze/describe images (vision) |
-| `video_generate` | — | Generate video from prompts |
-| `audio_transcribe` | `"audio_*"` | Speech-to-text transcription |
-| `audio_speak` | `"audio_*"` | Text-to-speech synthesis |
+`http_fetch`, `http_download` — already loaded as core.
 
-## Search Tools (2) — `"search_*"`
-| Tool | Description |
-|------|-------------|
-| `search_web` | Web search (returns structured results) |
-| `search_find_similar` | Find semantically similar content |
+## Email (8 tools — wildcard `email_*`)
 
-## Agent System Tools (6)
-| Tool | Pattern | Description |
-|------|---------|-------------|
-| `vault_get` | always available | Get credentials for a service from the vault |
-| `vault_list` | always available | List available vault entries (metadata only) |
-| `memory_get` | `"memory_*"` | Read project or agent memory |
-| `memory_save` | `"memory_*"` | Overwrite memory content |
-| `memory_append` | `"memory_*"` | Append a timestamped line to memory |
-| `memory_update` | `"memory_*"` | Find and replace text in memory |
+`email_send`, `email_draft`, `email_verify`, `email_list`, `email_read`, `email_search`, `email_count`, `email_download_attachment`
 
-## Browser Tools (17) — `"browser_*"`
-Full Playwright-powered browser automation. Supports persistent profiles via `browserProfile`.
+Credentials resolved from vault (entries of type `smtp` and `imap`). Restrict recipients with `emailAllowedDomains`.
 
-| Tool | Description |
-|------|-------------|
-| `browser_navigate` | Go to a URL |
-| `browser_back` | Navigate back |
-| `browser_forward` | Navigate forward |
-| `browser_reload` | Reload current page |
-| `browser_click` | Click an element (by selector or text) |
-| `browser_hover` | Hover over an element |
-| `browser_type` | Type text into an element |
-| `browser_fill` | Fill a form field |
-| `browser_press` | Press a keyboard key |
-| `browser_select` | Select a dropdown option |
-| `browser_scroll` | Scroll the page or element |
-| `browser_screenshot` | Take a screenshot |
-| `browser_snapshot` | Get the DOM snapshot (accessibility tree) |
-| `browser_get` | Get page content (HTML/text) |
-| `browser_eval` | Execute JavaScript in page context |
-| `browser_wait` | Wait for selector/condition |
-| `browser_tabs` | List open tabs |
-| `browser_close` | Close a tab |
+## Vault (2 tools — wildcard `vault_*`)
 
-## Typical Tool Profiles
+`vault_get`, `vault_list` — already loaded as core. Always returns the agent's own scope only; cross-agent vault access blocked.
 
-**Coding agent:** `["bash", "read", "write", "edit", "glob", "grep"]`
-**Research agent:** `["read", "grep", "glob", "search_web", "http_fetch"]`
-**Email agent:** `["email_*", "read", "write"]` + vault SMTP creds
-**Browser agent:** `["browser_*", "read", "write", "bash"]`
-**Full-stack agent:** `["bash", "read", "write", "edit", "glob", "grep", "http_fetch", "search_web"]`
+## Image & video (3 tools — `image_*` matches 2)
 
-Source: `packages/tools/src/*-tools.ts`, `packages/tools/src/index.ts`
+`image_generate` — text → image. Default model: `fal/fal-ai/flux/dev`. Override per-agent with `image_model`.
+`image_analyze` — image → text via vision model. Default: `openai/gpt-4o-mini`. Override with `vision_model`.
+`video_generate` — text → video. Default: `fal/luma-ray-2-flash`. Override with `video_model`.
+
+**Important quirk**: `image_*` wildcard matches `image_generate` and `image_analyze` only — NOT `video_generate`. To enable all three:
+```json
+"allowedTools": ["image_*", "video_generate"]
+```
+
+## Audio (2 tools — wildcard `audio_*`)
+
+`audio_transcribe` — speech → text. Default: `openai/whisper-1`. Override with `transcribe_model`.
+`audio_speak` — text → speech. Default: `openai/tts-1`. Special: `edge/edge-tts` for free local Microsoft Edge voices. Override with `tts_model`.
+
+## Excel (4 tools — wildcard `excel_*`)
+
+`excel_read`, `excel_write`, `excel_query`, `excel_info`
+
+Reads/writes `.xlsx` and `.csv`. `excel_query` runs SQL-like filters.
+
+## PDF (4 tools — wildcard `pdf_*`)
+
+`pdf_read`, `pdf_create`, `pdf_merge`, `pdf_info`
+
+`pdf_create` accepts HTML or markdown input.
+
+## Docx (2 tools — wildcard `docx_*`)
+
+`docx_read`, `docx_create` — Word-compatible .docx files.
+
+## Search (2 tools — wildcard `search_*`)
+
+`search_web` — web search via Exa.
+`search_find_similar` — find pages similar to a URL.
+
+Requires `EXA_API_KEY` env var or vault entry under service `exa`.
+
+## Memory (4 tools — wildcard `memory_*`)
+
+Agent-scoped persistent memory. Each agent has its own isolated memory; cross-agent reads are blocked at the runtime.
+
+| Tool | What it does | Notes |
+|---|---|---|
+| `memory_get` | Read the agent's own memory | Returns "(no memory saved yet)" if empty |
+| `memory_save` | Overwrite the entire memory | Use when restructuring; prefer `memory_append` for incremental notes |
+| `memory_append` | Append a single timestamped line | Quick notes, observations |
+| `memory_update` | Find + replace a substring | `{old_text, new_text}` — old_text must be unique |
+
+Memory tools were added in 0.7.7. They require a MemoryStore + agent name to be present at runtime; the system auto-provides both when the agent runs inside Polpo.
+
+## Wildcard expansion summary
+
+| Pattern | Expands to | Count |
+|---|---|---|
+| `browser_*` | all browser tools | 18 |
+| `email_*` | all email tools | 8 |
+| `image_*` | `image_generate`, `image_analyze` (NOT `video_generate`) | 2 |
+| `audio_*` | `audio_transcribe`, `audio_speak` | 2 |
+| `excel_*` | all excel tools | 4 |
+| `pdf_*` | all pdf tools | 4 |
+| `docx_*` | all docx tools | 2 |
+| `search_*` | `search_web`, `search_find_similar` | 2 |
+| `memory_*` | all 4 memory tools | 4 |
+| `vault_*` | `vault_get`, `vault_list` | 2 |
+| `http_*` | `http_fetch`, `http_download` | 2 |
+| `*` | every built-in tool + MCP tools | 50+ |
+
+## Tool selection recipes
+
+### Research agent
+```json
+"allowedTools": [
+  "read","write","glob","grep",
+  "http_*","search_*","browser_*",
+  "pdf_*","excel_*",
+  "memory_*"
+]
+```
+
+### Coding agent
+```json
+"allowedTools": [
+  "read","write","edit","bash","glob","grep","ls",
+  "http_fetch",
+  "memory_*"
+]
+```
+Pair with strict `allowedPaths` to keep it sandboxed.
+
+### Customer support agent
+```json
+"allowedTools": [
+  "read","write",
+  "email_*",
+  "search_web",
+  "memory_*"
+]
+```
+Pair with `emailAllowedDomains: ["yourcompany.com"]`.
+
+### Content creator agent
+```json
+"allowedTools": [
+  "read","write",
+  "image_*","video_generate",
+  "audio_speak",
+  "pdf_create","docx_create",
+  "browser_navigate","browser_screenshot",
+  "http_*"
+]
+```
+
+### Data processing agent
+```json
+"allowedTools": [
+  "read","write","bash",
+  "excel_*","pdf_*","docx_*",
+  "http_*"
+]
+```
+
+## Common pitfalls
+
+- **`image_*` doesn't include `video_generate`** — add it explicitly.
+- **Tool requires a vault entry that doesn't exist** — `audio_speak` with OpenAI needs `openai` API key; `search_web` needs `exa`. Create the vault entry first (see `vault.md`).
+- **Wildcards on untrusted agents** — `["*"]` exposes every tool including `email_send`. Use the minimum needed.
+- **No `browserProfile`** — browser tools work but lose cookies/localStorage between runs. Set `browserProfile` for stateful flows.
+- **MCP tool not in catalog** — MCP tools are namespaced `mcp__<server>__<tool>` and must be listed individually in `allowedTools` (no wildcard).
