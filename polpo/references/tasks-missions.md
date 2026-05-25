@@ -86,7 +86,7 @@ Expectations validate task success. Discriminated by `type`. **Critical**: `file
 
 ### file_exists
 ```json
-{ "type": "file_exists", "paths": [".polpo/output/report.pdf"] }
+{ "type": "file_exists", "paths": ["output/report.pdf"] }
 ```
 
 ### test
@@ -136,10 +136,10 @@ Move to pending later with `POST /v1/tasks/{id}/queue`.
 ```json
 {
   "title": "Build PDF",
-  "description": "Produce .polpo/output/summary.pdf",
+  "description": "Produce output/summary.pdf",
   "assignTo": "analyst",
   "expectations": [
-    { "type": "file_exists", "paths": [".polpo/output/summary.pdf"] }
+    { "type": "file_exists", "paths": ["output/summary.pdf"] }
   ]
 }
 ```

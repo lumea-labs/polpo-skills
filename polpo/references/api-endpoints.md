@@ -87,11 +87,11 @@ curl -X POST https://my-project.polpo.cloud/v1/tasks \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Quarterly summary",
-    "description": "Write a one-page summary of Q1 KPIs to .polpo/output/summary.md",
+    "description": "Write a one-page summary of Q1 KPIs to output/summary.md",
     "assignTo": "analyst",
     "draft": true,
     "expectations": [
-      { "type": "file_exists", "paths": [".polpo/output/summary.md"] }
+      { "type": "file_exists", "paths": ["output/summary.md"] }
     ]
   }'
 ```
@@ -165,7 +165,7 @@ curl -X POST https://my-project.polpo.cloud/v1/missions/{missionId}/tasks \
     "assignTo": "analyst",
     "dependsOn": ["create_brief"],
     "expectations": [
-      { "type": "file_exists", "paths": [".polpo/output/benchmarks.md"] }
+      { "type": "file_exists", "paths": ["output/benchmarks.md"] }
     ]
   }'
 ```
