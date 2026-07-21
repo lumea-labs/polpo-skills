@@ -53,8 +53,9 @@ content: ["./node_modules/@polpo-ai/chat/dist/**/*.js"]
 ```tsx
 import { PolpoProvider } from "@polpo-ai/react";
 
-// baseUrl is root URL — SDK appends /v1/ internally. Do NOT add /v1/.
-<PolpoProvider baseUrl="https://api.polpo.sh" apiKey={process.env.NEXT_PUBLIC_POLPO_API_KEY} autoConnect={false}>
+// baseUrl is the project root URL. Do not append /v1 or /api/v1.
+// Cloud project example: https://<project-slug>.polpo.cloud
+<PolpoProvider baseUrl={process.env.NEXT_PUBLIC_POLPO_URL!} apiKey={process.env.NEXT_PUBLIC_POLPO_API_KEY} autoConnect={false}>
   {children}
 </PolpoProvider>
 ```

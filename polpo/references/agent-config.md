@@ -5,7 +5,7 @@
 An agent in Polpo is a reusable, autonomous entity defined in `.polpo/agents.json`. Unlike a single LLM call:
 
 - **Reusable** — defined once, invoked many times across tasks and chat completions
-- **Stateful** — has identity, system prompt, per-agent memory, vault credentials
+- **Stateful** — has identity, system prompt, per-agent memory, and connection-backed credentials when configured
 - **Tool-equipped** — bound to a specific set of tools (`allowedTools`)
 - **Hierarchical** — can `reportsTo` another agent for escalation
 - **Sandboxed** — restricted to `allowedPaths`, `emailAllowedDomains`, etc.
@@ -21,7 +21,7 @@ Agents are the executors. Tasks/missions define what to do; agents are who does 
 }
 ```
 
-Only `name` is strictly required (per `AddAgentSchema`). Without `model`, the global default is used. Without `allowedTools`, only the core tools are loaded (read/write/edit/bash/glob/grep/ls + http_fetch/http_download + vault_get/vault_list).
+Only `name` is strictly required (per `AddAgentSchema`). Without `model`, the global default is used. Without `allowedTools`, only core tools are loaded (read/write/edit/bash/glob/grep/ls + http_fetch/http_download, plus legacy vault tools when a vault exists).
 
 ## Full-featured agent
 
@@ -82,7 +82,7 @@ Every field accepted by `AddAgentSchema` / `UpdateAgentSchema` and persisted on 
 ### Model + reasoning
 | Field | Type | Required | Default | Notes |
 |---|---|---|---|---|
-| `model` | string | no | global default | Format `provider/model` (e.g. `anthropic/claude-sonnet-4-5`, `xai/grok-4.1-fast-non-reasoning`, `openai/gpt-4o`). Routed via Vercel AI Gateway. |
+| `model` | string | no | global default | Format `provider/model` (e.g. `anthropic/claude-sonnet-4-5`, `xai/grok-4.1-fast-non-reasoning`, `openai/gpt-4o`). Routed by the configured model runtime/gateway. |
 | `reasoning` | ReasoningLevel | no | global setting | `off` / `minimal` / `low` / `medium` / `high` / `xhigh`. Higher = deeper thinking, slower + more expensive. |
 | `maxTurns` | number | no | 150 | Cap on conversation turns to prevent infinite loops. |
 | `maxConcurrency` | number | no | unlimited | Max concurrent tasks this agent can hold. |
@@ -186,7 +186,9 @@ Connect external Model Context Protocol servers to extend an agent's tools at ru
 ```
 
 - Tools from MCP server `notion` exposing `query_database` → tool name `mcp__notion__query_database`.
-- Use `${vault:<service>:<key>}` interpolation for credentials.
+- Use dashboard/Connections for remote MCP when available, so credentials and tool grants stay server-side.
+- Use `mcpServers` for code-configured MCP endpoints and local/server-controlled tools.
+- `${vault:<service>:<key>}` interpolation is still supported for legacy vault-backed headers/env.
 
 ## Volatile agents (mission-scoped)
 
@@ -266,7 +268,7 @@ Useful for fan-out workflows where you want N parallel ephemeral workers.
 - **Empty wildcard** (`"browser_"` with no suffix) — not a wildcard. Use `"browser_*"` or specific tool names.
 - **No model anywhere** (agent has no `model`, no global default set) — task spawn fails with "no model configured".
 - **`allowedPaths: ["/"]`** — sandbox escape. Always be specific.
-- **Vault reference without entry** — `systemPrompt: "Use ${vault:slack:token}"` but no vault entry exists. See `vault.md`.
+- **Credential reference without entry** — an MCP header or tool expects a Connection/vault key that does not exist. Configure it first.
 - **Circular `reportsTo`** — A → B → A. Escalation chains must be acyclic.
 - **`*` allowedTools on an untrusted agent** — Principle of least privilege; whitelist only what's needed.
 - **Volatile without `missionGroup`** — volatile agents must declare their group; otherwise cleanup misses them.
