@@ -1,12 +1,14 @@
-# Vault — Encrypted Credentials
+# Vault — Legacy Encrypted Credentials
 
-Per-agent encrypted credential store. Agents access credentials at runtime through `vault_get` / `vault_list` tools — credentials never appear in system prompts, config files, or chat history.
+Per-agent encrypted credential store. Use this for existing file-based projects and compatibility with older agents. For new external integrations, prefer Connections when the host/dashboard exposes the provider.
+
+Agents access vault credentials at runtime through `vault_get` / `vault_list` tools. Credentials never appear in system prompts or chat history.
 
 ## Concept
 
 Each agent has its own scope. The runtime decrypts just-in-time and exposes only that agent's credentials via tools. Cross-agent access is blocked by design.
 
-Common services: LLM provider keys (OpenAI, Anthropic), search (Exa), email (SMTP/IMAP credentials), database logins, OAuth tokens.
+Common legacy services: LLM provider keys, search (Exa), email (SMTP/IMAP credentials), database logins, OAuth tokens.
 
 ## File format
 
@@ -32,6 +34,8 @@ You typically don't edit `vault.enc` by hand. Instead:
 - Use the dashboard (writes via the API)
 - Use the API directly (curl examples below)
 - Or programmatically populate the file via the `@polpo-ai/vault-crypto` package and let `polpo deploy` push it
+
+If a Connection exists for the same service, use that instead of adding a new vault entry.
 
 ## Deploy behavior
 
@@ -218,6 +222,7 @@ curl -X DELETE https://my-project.polpo.cloud/v1/vault/entries/researcher/openai
 
 ## Common pitfalls
 
+- **Using vault for a new integration when Connections exist** — prefer Connections; they can be project-scoped, OAuth-backed, MCP-aware, and managed from the dashboard.
 - **Vault key not configured** — `polpo deploy` fails with a clear error. Set `POLPO_VAULT_KEY` env or `~/.polpo/vault.key`.
 - **Trying to read a value from the API** — the GET endpoint returns metadata only. Values are only available to the agent at runtime via `vault_get`.
 - **Wrong type discriminator** — every entry MUST have `type` matching one of the 6 known values; the API rejects unknown types.

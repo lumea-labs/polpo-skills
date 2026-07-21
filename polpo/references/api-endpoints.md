@@ -4,7 +4,9 @@ Complete reference for the Polpo HTTP API.
 
 ## Conventions
 
-**Base URL:** `https://{project-slug}.polpo.cloud`
+**Cloud project base URL:** `https://{project-slug}.polpo.cloud`
+
+**Cloud control-plane base URL:** `https://api.polpo.sh`
 
 **Auth:** `Authorization: Bearer sk_live_...` (project-scoped API key)
 
@@ -14,7 +16,9 @@ Complete reference for the Polpo HTTP API.
 { "ok": false, "error": "..." }  // failure
 ```
 
-**Path layout:** every route under `/v1/`. Chat completions are OpenAI-compatible at `/v1/chat/completions`.
+**Path layout:** cloud project routes use `/v1/*`. Chat completions are OpenAI-compatible at `/v1/chat/completions`.
+
+The React/SDK client accepts a root `baseUrl` and chooses the API prefix. Do not append `/v1` or `/api/v1` to `baseUrl`.
 
 **ID conventions:**
 - **Agents**: identified by `name` (string), NOT UUID
@@ -260,6 +264,27 @@ curl -X POST https://my-project.polpo.cloud/v1/vault/entries \
 
 ---
 
+## Connections
+
+Connections are the current project credential/connector layer. Use them for new external integrations when available; vault is maintained for compatibility.
+
+Cloud project-scoped routes:
+
+| Method | Path | Body |
+|---|---|---|
+| GET | `/v1/projects/{projectId}/connect/providers` | — |
+| GET | `/v1/projects/{projectId}/connect/connections` | query filters |
+| POST | `/v1/projects/{projectId}/connect/connections/api-key` | provider id, name, secret fields |
+| POST | `/v1/projects/{projectId}/connect/connections/mcp` | name, endpoint URL, headers |
+| DELETE | `/v1/projects/{projectId}/connect/connections/{connectionId}` | — |
+| POST | `/v1/projects/{projectId}/connect/oauth/start` | provider id + redirect info |
+| POST | `/v1/projects/{projectId}/connect/connections/{connectionId}/mcp/discover` | — |
+| POST | `/v1/projects/{projectId}/connect/connections/{connectionId}/actions/{actionId}` | action params |
+
+See `connections.md` for credential semantics, subject scope, and custom-tool usage.
+
+---
+
 ## Skills
 
 | Method | Path | Body | Returns |
@@ -375,6 +400,7 @@ Mission `name` has a UNIQUE constraint. If you're using `POST /v1/missions` to u
 
 - Agent config shape: `agent-config.md`
 - Tool catalog + wildcards: `tools.md`
+- Connections and MCP URL credentials: `connections.md`
 - Task/mission shapes + lifecycle: `tasks-missions.md`
 - Vault schemas per `type`: `vault.md`
 - Memory file layout: `memory.md`

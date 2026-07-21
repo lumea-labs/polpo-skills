@@ -1,8 +1,10 @@
 # Tool Catalog
 
-50+ built-in tools across 12 categories. Enable via the agent's `allowedTools` field — supports exact names (`browser_navigate`) and category wildcards (`browser_*`), plus the global `"*"`.
+Built-in tools are enabled through the agent's `allowedTools` field. Use exact names (`browser_navigate`) or category wildcards (`browser_*`). Keep tool sets narrow: every enabled tool adds capability and may add prompt/tool metadata.
 
 When a tool is in `allowedTools`, its docs are auto-injected into the agent's system prompt so the LLM knows the interface.
+
+MCP tools and custom tool functions are separate surfaces. They can be assigned to agents, but they are not part of the built-in wildcard catalog.
 
 ## Core (always loaded)
 
@@ -19,8 +21,8 @@ When a tool is in `allowedTools`, its docs are auto-injected into the agent's sy
 Also always loaded:
 | `http_fetch` | GET/POST/PUT/DELETE with SSRF guard | `url`, `method?`, `headers?`, `body?` |
 | `http_download` | Download file from URL | `url`, `path` |
-| `vault_get` | Retrieve a credential | `service`, `key?` |
-| `vault_list` | List vault services available | — |
+| `vault_get` | Retrieve a legacy vault credential when a vault exists | `service`, `key?` |
+| `vault_list` | List legacy vault services available | — |
 
 ## Browser (18 tools — wildcard `browser_*`)
 
@@ -43,11 +45,11 @@ Common workflow:
 
 `email_send`, `email_draft`, `email_verify`, `email_list`, `email_read`, `email_search`, `email_count`, `email_download_attachment`
 
-Credentials resolved from vault (entries of type `smtp` and `imap`). Restrict recipients with `emailAllowedDomains`.
+Credentials resolve from Connections where the host exposes them; legacy/local projects can use vault entries of type `smtp` and `imap`. Restrict recipients with `emailAllowedDomains`.
 
 ## Vault (2 tools — wildcard `vault_*`)
 
-`vault_get`, `vault_list` — already loaded as core. Always returns the agent's own scope only; cross-agent vault access blocked.
+`vault_get`, `vault_list` — compatibility surface for `.polpo/vault.enc`. Always returns the agent's own scope only; cross-agent vault access is blocked. Prefer Connections for new external services when available.
 
 ## Image & video (3 tools — `image_*` matches 2)
 
@@ -86,7 +88,7 @@ Reads/writes `.xlsx` and `.csv`. `excel_query` runs SQL-like filters.
 `search_web` — web search via Exa.
 `search_find_similar` — find pages similar to a URL.
 
-Requires `EXA_API_KEY` env var or vault entry under service `exa`.
+Requires an Exa key from the runtime environment, a Connection, or a legacy vault entry under service `exa`.
 
 ## Memory (4 tools — wildcard `memory_*`)
 
@@ -116,7 +118,57 @@ Memory tools were added in 0.7.7. They require a MemoryStore + agent name to be 
 | `memory_*` | all 4 memory tools | 4 |
 | `vault_*` | `vault_get`, `vault_list` | 2 |
 | `http_*` | `http_fetch`, `http_download` | 2 |
-| `*` | every built-in tool + MCP tools | 50+ |
+| `*` | every built-in tool in the catalog | 50+ |
+
+## Custom tool functions
+
+Project-defined tools live in `.polpo/tools/*.ts` and export `defineTool`.
+
+```ts
+import { defineTool } from "@polpo-ai/tools";
+import { Type } from "@sinclair/typebox";
+
+export default defineTool({
+  name: "lookup_customer",
+  description: "Look up a customer by id",
+  parameters: Type.Object({ customerId: Type.String() }),
+  async execute(ctx, params) {
+    const headers = await ctx.connections.getHeaders("crm");
+    const res = await fetch(`https://api.example.com/customers/${params.customerId}`, { headers });
+    return await res.text();
+  },
+});
+```
+
+`ctx` includes sandbox filesystem/shell helpers, `env`, `workDir`, `polpo`, and `connections`. Use `ctx.connections` for new credential-backed tools. Existing vault-based tools may still use legacy vault helpers.
+
+Manage custom tools:
+
+```bash
+polpo tools push ./.polpo/tools/lookup_customer.ts
+polpo tools list
+polpo tools run lookup_customer --args '{"customerId":"c_1"}'
+polpo tools get lookup_customer
+polpo tools rm lookup_customer
+```
+
+Assign by exact name in `allowedTools`, for example `"allowedTools": ["read", "lookup_customer"]`.
+
+## MCP tools
+
+MCP tools come from configured MCP servers or remote MCP Connections. Names are namespaced:
+
+```text
+mcp__<server>__<tool>
+```
+
+Example:
+
+```json
+"allowedTools": ["mcp__notion__query_database"]
+```
+
+Use the dashboard/Connections flow when available so Polpo can store headers, discover official metadata, and grant selected tools. Use `agent.mcpServers` for code-configured MCP endpoints.
 
 ## Tool selection recipes
 
@@ -175,7 +227,7 @@ Pair with `emailAllowedDomains: ["yourcompany.com"]`.
 ## Common pitfalls
 
 - **`image_*` doesn't include `video_generate`** — add it explicitly.
-- **Tool requires a vault entry that doesn't exist** — `audio_speak` with OpenAI needs `openai` API key; `search_web` needs `exa`. Create the vault entry first (see `vault.md`).
+- **Tool requires a credential that doesn't exist** — `search_web` needs an Exa key; email tools need SMTP/IMAP credentials. Configure a Connection where available, or a legacy vault entry.
 - **Wildcards on untrusted agents** — `["*"]` exposes every tool including `email_send`. Use the minimum needed.
 - **No `browserProfile`** — browser tools work but lose cookies/localStorage between runs. Set `browserProfile` for stateful flows.
-- **MCP tool not in catalog** — MCP tools are namespaced `mcp__<server>__<tool>` and must be listed individually in `allowedTools` (no wildcard).
+- **MCP tool not in catalog** — MCP tools are namespaced `mcp__<server>__<tool>` and must be listed individually or granted through the dashboard.
