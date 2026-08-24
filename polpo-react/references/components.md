@@ -7,6 +7,7 @@
   sessionId?: string           // Existing session (omit for new)
   agent?: string               // Agent name
   onSessionCreated?: (id) => void  // Callback when session created
+  onFinish?: (result) => void  // Callback after the assistant stream finishes
   onUpdate?: () => void        // After each stream update
   renderMessage?: (msg, index, isLast, isStreaming) => ReactNode
   avatar?: ReactNode           // Assistant avatar
@@ -121,6 +122,9 @@ Virtuoso-powered. Must be inside `<ChatProvider>`.
 />
 ```
 
+This is a presentational shape. Runtime-generated suggestions use `{ id, label, prompt }`; map
+`label` to `text` and retain `prompt` in the selection handler.
+
 ## `<ChatAskUser>`
 
 ```tsx
@@ -133,12 +137,16 @@ Virtuoso-powered. Must be inside `<ChatProvider>`.
 
 Single question = flat layout. Multiple = wizard with tabs + summary.
 
+Submit answers through the matching pending client tool continuation. Rendering the component
+alone does not resolve the server-side tool call.
+
 ## `<ChatLanding>`
 
 ```tsx
 <ChatLanding
   agent?: string
   onSessionCreated?: (id) => void
+  onFinish?: (result) => void
   greeting?: string            // Default: "How can I help you?"
   subtitle?: string
   suggestions?: ChatSuggestion[]
