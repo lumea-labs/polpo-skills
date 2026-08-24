@@ -67,7 +67,7 @@ npx @polpo-ai/ui list
 
 | Component | What it installs |
 |-----------|-----------------|
-| `chat` | Everything (29 files) |
+| `chat` | Complete chat component set |
 | `lib` | relativeTime, getTextContent |
 | `hooks` | useSubmitHandler, useDocumentDrag |
 | `tools` | 9 tool renderers |

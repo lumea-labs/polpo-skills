@@ -1,132 +1,66 @@
 ---
 name: polpo-react
-description: Build AI agent interfaces with Polpo UI — composable React chat components, CLI tools, and starter templates. Use when the user wants to create a chat app, add chat components, install @polpo-ai/chat, scaffold a Polpo project, configure theming/dark mode, use ChatInput, ChatMessage, ChatSessionList, or any Polpo UI component. Triggers on "polpo ui", "chat UI", "chat component", "@polpo-ai/chat", "@polpo-ai/ui", "create-polpo-app", "chat input", "session list", "agent selector", "chat interface", "polpo chat", "chat widget", "multi-agent".
+description: Build React interfaces for Polpo agents with @polpo-ai/react and @polpo-ai/chat. Use for chat components, Sessions, durable reconnect, attachments, ask-user interactions, suggestions, client tool rendering and continuation, agent selection, or Polpo UI theming.
 ---
 
-# Polpo UI
+# Polpo React
 
-Composable React chat components for Polpo AI agents. Three composition levels, three installation methods.
+Use `@polpo-ai/react` for runtime state and hooks. Use `@polpo-ai/chat` for composable UI.
+Keep application routing and business-side client tool execution in the consuming app.
 
 ## Install
 
-### New project
-
 ```bash
-# Interactive
-npx create-polpo-app
-
-# Non-interactive (CI / AI agents)
-npx create-polpo-app my-app -t chat -y
-npx create-polpo-app my-app -t chat-widget -y
-npx create-polpo-app my-app -t multi-agent -y
+npm install @polpo-ai/chat @polpo-ai/sdk @polpo-ai/react \
+  react-virtuoso lucide-react streamdown
 ```
 
-### Add to existing project (shadcn-style, copies source)
+Or add source components with `npx @polpo-ai/ui add`. For a new application use
+`npx create-polpo-app`.
 
-```bash
-# Interactive multi-select
-npx @polpo-ai/ui add
-
-# Non-interactive
-npx @polpo-ai/ui add --all
-npx @polpo-ai/ui add tools hooks --overwrite
-```
-
-### npm package (compiled)
-
-```bash
-npm install @polpo-ai/chat @polpo-ai/sdk @polpo-ai/react react-virtuoso lucide-react streamdown
-```
-
-Consumer adds Tailwind scanning:
-```css
-/* Tailwind v4 */
-@source "../node_modules/@polpo-ai/chat/dist/**/*.js";
-```
-```js
-// Tailwind v3 — tailwind.config.js
-content: ["./node_modules/@polpo-ai/chat/dist/**/*.js"]
-```
-
-## Provider Setup
+## Provider
 
 ```tsx
 import { PolpoProvider } from "@polpo-ai/react";
 
-// baseUrl is the project root URL. Do not append /v1 or /api/v1.
-// Cloud project example: https://<project-slug>.polpo.cloud
-<PolpoProvider baseUrl={process.env.NEXT_PUBLIC_POLPO_URL!} apiKey={process.env.NEXT_PUBLIC_POLPO_API_KEY} autoConnect={false}>
+<PolpoProvider baseUrl={process.env.NEXT_PUBLIC_POLPO_URL!} autoConnect={false}>
   {children}
 </PolpoProvider>
 ```
 
-## Composition Levels
+`baseUrl` is the project root; do not append `/v1` or `/api/v1`. Do not expose privileged
+server API keys in browser bundles. Use the application's authenticated backend/proxy when
+credentials must remain server-side.
 
-### Level 1 — Zero Config
-```tsx
-<Chat agent="coder" sessionId="session_abc" />
-```
+## Chat Choice
 
-### Level 2 — Compose (children replace default input)
-```tsx
-<Chat agent="coder" avatar={<Avatar />}>
-  <MyCustomInput />
-</Chat>
-```
-
-### Level 3 — Primitives
-```tsx
-import { ChatMessage, ChatSkeleton } from "@polpo-ai/chat";
-import { useChat } from "@polpo-ai/react";
-```
-
-## Render Function Pattern
+Use the high-level component for ordinary chat:
 
 ```tsx
-<Chat agent="coder" onSessionCreated={(id) => router.replace(`/chat/${id}`)}>
-  {({ hasMessages }) => hasMessages ? <ChatInput /> : <LandingPage />}
-</Chat>
+<Chat agent="support" sessionId={sessionId} />
 ```
 
-## Session Navigation
+Use `useChat` directly when the product needs durable delivery, custom interactions, explicit
+client tools, Loop continuation, or its own message composition.
 
-Package does NOT handle routing. Use `onSessionCreated` callback:
-```tsx
-<Chat onSessionCreated={(id) => router.push(`/chat/${id}`)} />
-```
+## UI Invariants
 
-## Components
-
-| Component | Purpose |
-|---|---|
-| `Chat` | Root compound — Provider + Messages + Input |
-| `ChatInput` | Textarea + submit + file attach + drag & drop |
-| `ChatMessage` | Message dispatcher (user/assistant) |
-| `ChatMessages` | Virtuoso list with auto-scroll |
-| `ChatProvider` | Context wrapping useChat + useFiles |
-| `ChatSessionList` | Flat session list with select/delete |
-| `ChatSessionsByAgent` | Sessions grouped by agent |
-| `ChatAgentSelector` | Agent picker dropdown |
-| `ChatSuggestions` | Suggestion button grid |
-| `ChatAskUser` | Ask-user-question wizard |
-| `ChatLanding` | Landing + greeting + input + suggestions |
-| `ChatScrollButton` | Scroll-to-bottom indicator |
-| `ChatSkeleton` | Loading skeleton |
-| `ChatTyping` | Typing dots |
-| `ToolCallChip` | Auto-dispatching tool renderer |
-| `ToolCallShell` | Base tool renderer with expand/collapse |
-
-## Hooks
-
-```tsx
-const { messages, sendMessage, isStreaming, abort, uploadFile, pendingToolCall } = useChatContext();
-const handleSubmit = useSubmitHandler(sendMessage, uploadFile);
-const dragging = useDocumentDrag();
-```
+- Treat Session history from Polpo as canonical; do not duplicate optimistic messages after
+  reconnect or client-tool continuation.
+- Show `reconnecting` separately from `streaming` and do not mark detached durable runs failed.
+- Render a client tool only after validating its name and arguments against the local handler.
+- Continue tool results with a stable idempotency key and current Session version.
+- Suggestions belong to the assistant message that produced them and are actionable only while
+  it remains the latest message.
+- Attachments use typed content parts and authenticated file URL resolution; never place local
+  filesystem paths in browser-visible messages.
 
 ## References
 
-- **Component props**: [references/components.md](references/components.md) — full props for every component
-- **Composition patterns**: [references/patterns.md](references/patterns.md) — app assembly, ask-user, sessions, custom tools
-- **CLI commands**: [references/cli.md](references/cli.md) — create-polpo-app, @polpo-ai/ui, flags
-- **Theming**: [references/theming.md](references/theming.md) — colors, dark mode, fonts, Tailwind config
+- [references/runtime-chat.md](references/runtime-chat.md): modern `useChat`, durability,
+  interactions, skills, and continuation.
+- [references/components.md](references/components.md): component props.
+- [references/patterns.md](references/patterns.md): current composition patterns.
+- [references/cli.md](references/cli.md): UI scaffolding commands.
+- [references/theming.md](references/theming.md): tokens, dark mode, fonts, and Tailwind.
+- [references/contract-version.md](references/contract-version.md): verified package versions.
