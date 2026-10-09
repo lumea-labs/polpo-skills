@@ -1,6 +1,6 @@
 ---
 name: polpo-integrations
-description: Build secure Polpo integrations using Connections, custom tools, trusted invocation context and hidden bindings, MCP servers, OAuth, and complete tool bundles. Use for credentials, tenant-scoped connection selection, tool packaging/execution, grants, scopes, or external service integration.
+description: Build secure Polpo integrations using Connections, custom tools, scoped ctx.data database access, trusted invocation context and hidden bindings, MCP servers, OAuth, and complete tool bundles. Use for credentials, tenant-scoped connection selection, tool packaging/execution, grants, scopes, or external service integration.
 ---
 
 # Polpo Integrations
@@ -29,11 +29,15 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
 - Hidden bindings and Connection capabilities never enter model history or serialized tool
   arguments.
 - A tool cannot widen its granted scopes, filesystem access, or execution surface.
+- Use the host-bound `ctx.data` capability for application records; do not inject database
+  credentials or schema administration into model-visible tools.
 - Packaging failure is detected before deployment; runtime 502 is not an acceptable dependency
   discovery mechanism.
 
 ## References
 
+- [references/data-capability.md](references/data-capability.md): `ctx.data`, SQL queries,
+  grants, retries and isolated gateway execution.
 - [references/custom-tools.md](references/custom-tools.md)
 - [references/trusted-context-and-bindings.md](references/trusted-context-and-bindings.md)
 - [references/connections.md](references/connections.md)
