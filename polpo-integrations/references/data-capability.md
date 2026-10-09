@@ -1,6 +1,7 @@
 # Application Data In Custom Tools
 
-Check [contract-version.md](contract-version.md) first: this Data contract is unreleased.
+Requires published Polpo OSS `0.15.144` or later. See
+[contract-version.md](contract-version.md) for the verified release contract.
 Use `ctx.data` for structured application records when the host has configured Data. It is
 optional and scoped to the current agent, project and environment. A custom tool receives no
 provider credentials and cannot construct new grants from model arguments.

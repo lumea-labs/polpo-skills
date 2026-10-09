@@ -1,6 +1,7 @@
 # Application Databases And The CLI
 
-Check [contract-version.md](contract-version.md) first: this Data contract is unreleased.
+Requires published Polpo OSS `0.15.144` or later. See
+[contract-version.md](contract-version.md) for the verified release contract.
 The product calls a resource a **database**; API `/data`, SDK `data()` and custom-tool
 `ctx.data` retain the generic Data namespace. Creating a database creates a logical resource
 with a stable UUID and its declared tables. The PostgreSQL adapter uses one dedicated schema

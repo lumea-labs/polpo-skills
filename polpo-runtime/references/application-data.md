@@ -1,6 +1,7 @@
 # Application Data Through The SDK And API
 
-Check [contract-version.md](contract-version.md) first: this Data contract is unreleased.
+Requires published Polpo OSS `0.15.144` or later. See
+[contract-version.md](contract-version.md) for the verified release contract.
 Data holds application records independently from Polpo runtime state and file Volumes. A
 logical database has a stable UUID, named tables and `schemaVersion`; the current PostgreSQL
 provider maps it to a schema. Public names are Databases, API `/data` and SDK `.data()`.

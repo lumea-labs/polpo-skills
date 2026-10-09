@@ -1,6 +1,7 @@
 # Agent Access To Application Databases
 
-Check [contract-version.md](contract-version.md) first: this Data contract is unreleased.
+Requires published Polpo OSS `0.15.144` or later. See
+[contract-version.md](contract-version.md) for the verified release contract.
 Databases contain application tables and records, separate from personal Memory, project
 Knowledge and file Volumes. The PostgreSQL adapter maps one logical database to a dedicated
 schema; this is not a new server or an agent-owned filesystem directory.
