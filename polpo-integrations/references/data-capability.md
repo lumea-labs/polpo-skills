@@ -60,7 +60,9 @@ capability expiry and transport credentials. Never pass gateway tokens or Neon/P
 credentials through model-visible parameters. In-process custom tools remain trusted Node
 code; `ctx.data` is not a sandbox for arbitrary code. Managed execution uses isolation.
 
-Cloud keeps Neon credentials and exposes scoped Polpo credentials to application servers.
+Cloud keeps Neon credentials. Application servers use their normal Polpo API key with
+full Data access inside its existing organization/project scope and bound environment.
+That key's access does not replace or widen an agent's independent database grants.
 Live/Test are separate Data environments; durable project tasks and schedules use Live.
 Data itself supplies no application user authentication or per-user row authorization. Resolve
 user identity and application rules in trusted application code; a model-provided user ID is

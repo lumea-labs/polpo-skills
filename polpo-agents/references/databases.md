@@ -29,6 +29,10 @@ Cloud stores these grants administratively. OSS reads host-owned `POLPO_DATA_AGE
 }
 ```
 
+In Cloud, choose agents in a database's **Access** tab or databases in an agent's
+**Databases** tab. These permissions are separate from the application's normal
+Polpo API key, which has full Data access inside its existing project scope.
+
 Do not place grants, provider credentials or that environment variable inside `agent.json`
 or model arguments. A read-only agent with `database_query` still cannot mutate records:
 write mode and write grants are both required. Selecting tool names alone never widens grants.

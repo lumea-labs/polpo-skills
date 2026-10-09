@@ -59,8 +59,10 @@ Example `migration.json`:
 }
 ```
 
-Migrations require administrative `manage` access and commit DDL, backfills, catalog version
-and history atomically. Supported DDL covers ordinary CREATE/ALTER/DROP TABLE and CREATE/DROP
+Migrations require administrative access and commit DDL, backfills, catalog version
+and history atomically. Normal Polpo API keys provide that access within their existing
+organization/project scope and environment; account sessions require owner/admin membership.
+Supported DDL covers ordinary CREATE/ALTER/DROP TABLE and CREATE/DROP
 INDEX within the logical database. Drops and type changes need `allowDestructive: true` in the
 JSON. Defaults, triggers, custom types, cascading drops and arbitrary ORM migration SQL are
 unsupported. `database_*` agent tools and `ctx.data` do not expose this administration.
@@ -69,11 +71,12 @@ unsupported. `database_*` agent tools and `ctx.data` do not expose this administ
 
 OSS provides contracts, PostgreSQL adapter, tools, HTTP, SDK and CLI. Self-hosting uses
 `POLPO_DATA_DATABASE_URL` for a separate application database whose owner has `CREATEROLE`;
-without it, Data is unavailable. For CLI calls use a server-side `POLPO_DATA_API_KEY` with
+without it, Data is unavailable. For CLI calls use a server-side `POLPO_API_KEY` with
 `--url http://localhost:3890/api`. The CLI appends `/v1/data`; do not add `/v1` again to that URL.
 
 Cloud provisions the managed application database on Neon and keeps provider credentials.
-Applications call Polpo's API using scoped Polpo keys. Live and Test keys select separate
+Applications call Polpo's API using their normal Polpo key with full Data access
+inside its existing organization/project scope. Live and Test keys select separate
 Data environments; the CLI does not invent an `--environment` flag. The managed feature must
 also be enabled by the host rollout configuration. Resources sharing a Neon branch share
 compute and backup/restore lifecycle; do not promise independent per-resource restore.
@@ -82,3 +85,14 @@ There is no agent `data` field or `data/` subdirectory. Agent policy may select 
 while trusted host configuration owns grants. `polpo deploy` and resource pull do not apply
 migration files or synchronize schemas, records or grants. Keep migration JSON in the
 application repository when useful, then apply it through an explicit administrative step.
+
+The self-hosted dashboard exposes **Databases** at `/data`: Schema and table selection, records,
+SQL query/mutation and migrations/history. It uses the configured runtime backend,
+without Cloud Live/Test or Neon provisioning controls. OSS agent grants remain
+host configuration; the dashboard does not simulate Cloud grant endpoints.
+
+The remote Cloud MCP and builder expose `polpo_databases_*` administration tools
+using the signed-in account, explicit `projectId` and optional `environment`
+(default `live`). Use query for SQL reads, mutate for record writes and migrate
+for SQL schema changes. These account tools are distinct from the agent's
+grant-limited `database_*` tools; existing OAuth read/write permissions apply.

@@ -7,7 +7,7 @@ provider maps it to a schema. Public names are Databases, API `/data` and SDK `.
 
 ## Typed Records
 
-Use a configured server-side Polpo SDK client and least-privilege Data grants:
+Use a configured server-side Polpo SDK client with the application's normal Polpo API key:
 
 ```ts
 const database = client.data("crm");
@@ -45,7 +45,8 @@ await database.query({
 
 Read is the default mode. PostgreSQL supports a bounded subset: SELECT, joins, aggregates,
 subqueries, UNION/VALUES and explicit INSERT/UPDATE/DELETE/ON CONFLICT. Use logical table names
-and bound scalar parameters; every referenced table needs its operation's grant. Catalogs,
+and bound scalar parameters. Agent calls additionally check every referenced table against
+the agent's grants. Catalogs,
 other schemas, session/role commands, procedural SQL, CTEs, arbitrary functions and unrestricted
 ORM SQL are unsupported. Bind numeric parameters rather than scientific SQL literals.
 
@@ -60,7 +61,10 @@ exact request, including after uncertain transport failures. Providers without S
 
 ## Administrative Schema Lifecycle
 
-Only trusted administrative clients with `manage` grants can create or change databases.
+Normal Polpo API keys can create or change databases within their existing organization/project
+scope and bound environment. For account sessions, schema administration requires owner/admin
+membership; ordinary members can read and write records. Programmatic OSS hosts resolve
+administrative `manage` access through the shared Data service.
 `client.createData({name,schema})` creates one; `database.describe()` yields its current version.
 `database.migrate({expectedVersion,schema})` supports additive schema evolution. For ordered SQL
 DDL and backfills:
@@ -100,8 +104,10 @@ Paths below are relative to `/v1` in Cloud or `/api/v1` on the standard self-hos
 | POST | `/data/:resource/query` |
 | GET / POST | `/data/:resource/migrations` |
 
-Cloud application servers receive scoped Polpo keys, never Neon credentials. A Data-only key
-cannot access unrelated Polpo APIs; Live and Test keys select separate Data environments.
+Cloud application servers use their normal Polpo API key, never Neon credentials.
+The key has full Data access within its existing organization/project scope, including schema
+administration. Live and Test keys select
+separate Data environments. Agent resource/table grants remain independent.
 Keep credentials server-side. Application user authentication and per-user row rules belong
 to the application; Data does not provide an end-user auth model.
 
@@ -111,3 +117,26 @@ Custom tools receive `ctx.data.list/describe/execute` and optional `query` with 
 These capabilities expose records, not schema administration. Agent directories have no `data`
 field or subdirectory, and project deploy/pull does not apply schemas, migrations, records or
 grants. Use an explicit administrative SDK/API/CLI step in the application's deployment flow.
+
+## MCP And Builder
+
+The remote Cloud MCP and builder expose the same 14 account tools:
+
+- `polpo_databases_list`, `polpo_databases_get`, `polpo_databases_create`,
+  `polpo_databases_rename`, `polpo_databases_delete`.
+- `polpo_databases_schema_migrate`, `polpo_databases_transaction`.
+- `polpo_databases_query` (read-only SQL), `polpo_databases_mutate` (SQL record writes).
+- `polpo_databases_migrate`, `polpo_databases_migrations_list`.
+- `polpo_databases_backend_get`, `polpo_databases_agent_grants_list`,
+  `polpo_databases_agent_grants_set`.
+
+All take `projectId` and optional `environment: "live" | "test"` (default `live`).
+Resource operations take `resource` (UUID or logical name). Create, rename, additive
+migrate, transaction, query, mutate and SQL migrate take their canonical API payload
+inside `input`; delete takes `expectedVersion` directly. Grant replacement takes
+`agent` and `grants`; preserve unrelated grants when editing one database's access.
+
+These calls use authenticated account identity and existing MCP OAuth read/write
+permissions. Read-only tokens cannot call mutating tools. Owner/admin membership is
+still required for schema, history, backend and grant administration. The runtime
+`database_*` tools retain independent agent grants. No provider credentials are needed.

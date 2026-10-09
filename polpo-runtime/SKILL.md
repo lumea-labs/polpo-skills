@@ -34,8 +34,8 @@ execution mode; SSE is only a delivery transport.
   nested Loop agent steps.
 - Steering is accepted only at safe boundaries and never interrupts a tool midway.
 - Provider errors must become stable Polpo errors with the useful diagnostic preserved.
-- Application Data is independent of Session/runtime storage and file Volumes. Use the
-  configured Data API and explicit database grants; keep application credentials server-side.
+- Application Data is independent of Session/runtime storage and file Volumes. Applications
+  use their normal server-side Polpo API key; agent database grants are independent.
 
 ## References
 
