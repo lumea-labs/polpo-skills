@@ -1,6 +1,6 @@
 ---
 name: polpo
-description: Set up, inspect, link, and deploy Polpo projects using the current .polpo directory layout and CLI. Use for project bootstrap, project files, cloud linking, deployment, or deciding whether behavior belongs to Polpo OSS or Polpo Cloud. For agent design, runtime calls, Channels, integrations, or React UI, use the corresponding specialized Polpo skill.
+description: Set up, inspect, link, and deploy Polpo projects using the current .polpo directory layout and CLI. Use for project bootstrap, project files, cloud linking, deployment, database administration through the CLI, or deciding whether behavior belongs to Polpo OSS or Polpo Cloud. For agent design, runtime calls, Channels, integrations, or React UI, use the corresponding specialized Polpo skill.
 ---
 
 # Polpo Projects
@@ -21,6 +21,10 @@ Treat the checked-out project and the installed CLI as authoritative. Do not rec
 6. Report the project, resources changed, validation performed, and whether anything still
    requires Cloud provisioning or rollout.
 
+For application databases, first read [references/databases.md](references/databases.md).
+Apply schema migrations as an explicit administrative step: project deployment and
+pulling resources do not synchronize database schemas, records, migration history or grants.
+
 ## Project Boundaries
 
 - OSS owns portable contracts, schemas, runtime behavior, SDKs, CLI behavior, and self-hosted
@@ -38,6 +42,8 @@ Treat the checked-out project and the installed CLI as authoritative. Do not rec
   validation, deployment, pull, skills, and failure semantics.
 - Read [references/platform-boundaries.md](references/platform-boundaries.md) when deciding OSS
   versus Cloud ownership or diagnosing managed-only behavior.
+- Read [references/databases.md](references/databases.md) for the Data CLI, database lifecycle,
+  self-hosted configuration and managed boundaries.
 - Read [references/contract-version.md](references/contract-version.md) before relying on exact
   fields or commands in a different Polpo release.
 

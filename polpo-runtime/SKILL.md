@@ -1,6 +1,6 @@
 ---
 name: polpo-runtime
-description: Integrate and operate the Polpo runtime through OpenAI-compatible completions and the Polpo SDK. Use for Sessions, durable runs and SSE reconnect, Project Loops, tasks and missions, client-side tools, structured output, parallel tools, chat interactions, steering, schedules, runtime plans, or execution debugging.
+description: Integrate and operate the Polpo runtime through OpenAI-compatible completions and the Polpo SDK. Use for application Data through the SDK/API, Sessions, durable runs and SSE reconnect, Project Loops, tasks and missions, client-side tools, structured output, parallel tools, chat interactions, steering, schedules, runtime plans, or execution debugging.
 ---
 
 # Polpo Runtime
@@ -34,9 +34,13 @@ execution mode; SSE is only a delivery transport.
   nested Loop agent steps.
 - Steering is accepted only at safe boundaries and never interrupts a tool midway.
 - Provider errors must become stable Polpo errors with the useful diagnostic preserved.
+- Application Data is independent of Session/runtime storage and file Volumes. Applications
+  use their normal server-side Polpo API key; agent database grants are independent.
 
 ## References
 
+- [references/application-data.md](references/application-data.md): typed records, scoped
+  SQL, administrative migrations, HTTP routes and application authentication boundaries.
 - [references/completions-and-sessions.md](references/completions-and-sessions.md)
 - [references/durable-runs.md](references/durable-runs.md)
 - [references/project-loops.md](references/project-loops.md)

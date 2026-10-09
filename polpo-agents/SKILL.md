@@ -1,6 +1,6 @@
 ---
 name: polpo-agents
-description: Design and configure current Polpo agents, including directory-based definitions, model profiles and routing, tool policies and loading, assigned skills and Loops, chat preferences, Memory, Knowledge, and sandbox defaults. Use when creating or changing an agent rather than invoking it.
+description: Design and configure current Polpo agents, including directory-based definitions, model profiles and routing, tool policies and loading, assigned skills and Loops, chat preferences, Memory, Knowledge, application database tool access, and sandbox defaults. Use when creating or changing an agent rather than invoking it.
 ---
 
 # Polpo Agents
@@ -33,6 +33,8 @@ may narrow it but must never widen it.
 - Per-surface and per-execution policies are intersections. Unknown or incompatible
   `tool_choice` values fail closed.
 - Chat interactions require both agent permission and client capability.
+- Database tools need both an `allowedTools` policy and host-owned Data grants. Agent
+  directories do not own database schemas or expose administrative migration capabilities.
 - Trusted identity, grants, Connection references, and hidden tool bindings do not belong in
   model-visible agent configuration.
 
@@ -45,5 +47,7 @@ may narrow it but must never widen it.
   progressive disclosure, and skill bundles.
 - [references/memory-and-knowledge.md](references/memory-and-knowledge.md): personal Memory versus
   project Knowledge.
+- [references/databases.md](references/databases.md): database tools, Data grants and the
+  boundary between agent directories and application records.
 - [references/sandbox.md](references/sandbox.md): isolation, lifecycle, and volume grants.
 - [references/contract-version.md](references/contract-version.md): verified contract version.
