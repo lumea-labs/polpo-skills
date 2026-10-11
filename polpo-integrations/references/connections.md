@@ -25,8 +25,18 @@ matches, more than one matches, the slot is invalid, or the resolver is unavaila
 The example assumes a configured custom HTTP Connector with a matching request policy.
 Tool code calls `ctx.connections.require("siteApi").request({ method: "GET", path: "/site" })`.
 The host attaches credentials outside the sandbox; the model receives only the tool result.
-An omitted slot mode selects legacy credential access and is rejected in managed tools.
-Do not teach `getHeaders`, `getToken`, or `getKey` as the normal integration path.
+Gateway and direct credentials coexist. For Git, HMAC, binary uploads or a client
+library that needs its own credential, declare `mode: "legacy_credentials"` and
+use `ctx.connections.require(slot).getToken()`, `.getKey()` or `.getHeaders()`.
+Omitted mode retains this direct-access compatibility meaning. In managed Polpo,
+the operator must separately approve the exact `credentialSlots` on the grant;
+the tool declaration cannot authorize itself. There is no ambient project-wide
+credential inventory and no fallback from a denied gateway to direct access.
+Direct code must keep credentials out of results, logs and model arguments.
+Revocation stops future export but cannot recall a previously copied credential.
+The credential retains provider-granted permissions; a narrower slot scope does
+not attenuate the exported token. Gateway operation policy cannot constrain
+direct requests made by tool code.
 
 ## CLI Operations
 
@@ -40,6 +50,10 @@ polpo connections bind CONNECTION_ID --binding BINDING_JSON
 polpo connections bind CONNECTION_ID --clear
 polpo connections grant-slot CONNECTION_ID \
   --agent leo --tool site_context_get --scope site:read
+polpo connections grant-slot CONNECTION_ID \
+  --agent leo --tool repository_checkout --scope repo --credential-slot github
+polpo connections grant-slot CONNECTION_ID \
+  --agent leo --tool repository_checkout --clear-credential-access
 polpo connections revoke-slot GRANT_ID
 polpo connections readiness \
   --agent leo --tool site_context_get --slot siteApi \
@@ -53,6 +67,11 @@ unrelated provider credentials when the provider grant remains valid.
 
 `readiness` must report status, required versus granted scopes, slot ambiguity, and unresolved
 trusted selectors before a run starts.
+The generic readiness probe checks gateway access without exporting a secret;
+it does not prove direct credential consent. Omitted `credentialSlots` preserves
+active consent; `[]` clears it. Revoked grants need fresh explicit consent when
+reactivated. The same field is available in `POST .../connect/grants` and
+`polpo_connections_grant_slot`; the dashboard offers Credential access per tool.
 
 `setup-readiness` checks Connector authentication prerequisites before account setup.
 It does not verify an account or grant agent access. A key-only record needs an API
