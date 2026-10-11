@@ -13,11 +13,17 @@ export default defineTool({
   timeoutMs: 30_000,
   execute: async (ctx, _params) => {
     const api = ctx.connections.require("siteApi");
-    return fetchSite(ctx.bindings.siteId, api.getHeaders(), ctx.signal);
+    const response = await api.request({
+      method: "GET",
+      path: `/sites/${encodeURIComponent(ctx.bindings.siteId)}`,
+    });
+    if (response.status >= 400) throw new Error(`Site API returned ${response.status}`);
+    return JSON.stringify(response.body);
   },
   connections: {
     siteApi: {
       provider: "sitoinchat",
+      mode: "gateway",
       scopes: ["site:read"],
       description: "Authorized SitoInChat API access",
     },
@@ -32,6 +38,10 @@ export default defineTool({
 Names are snake_case. `parameters` is the only schema shown to the model. The execution context
 provides scoped filesystem, shell, Connections, safe environment, work directory, SDK, abort
 signal, updates, immutable invocation, and validated hidden bindings.
+
+This example assumes a configured `sitoinchat` HTTP Connector whose policy permits
+the GET request. The host owns the endpoint, credential injection, and cancellation;
+the tool cannot change the account or read its credentials.
 
 Declare `timeoutMs` between one second and 30 minutes. Long external operations should be
 idempotent and respect `ctx.signal`; increasing a timeout does not replace progress events,

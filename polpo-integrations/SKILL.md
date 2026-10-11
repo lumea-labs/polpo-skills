@@ -23,7 +23,12 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
 
 ## Invariants
 
+- A Connector defines API or MCP communication and supported authentication.
+  A Connection is one authorized account; an OAuth Client configures the consent app.
+  Managed versus customer-owned OAuth apps is independent of account ownership.
 - Connection IDs and credentials are not model-controlled tool arguments.
+- Declare `mode: "gateway"` for Connection slots and use `.request()` with
+  provider-relative paths. Managed tools cannot read tokens, keys, or auth headers.
 - `ToolInvocationContext` is copied, JSON-validated, deeply frozen, and host-owned.
 - `serverBindings` can read only supported immutable invocation paths.
 - Hidden bindings and Connection capabilities never enter model history or serialized tool
