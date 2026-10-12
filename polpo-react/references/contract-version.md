@@ -21,3 +21,12 @@ Evidence: `packages/react-sdk/src/provider/polpo-provider.tsx`,
 The older verification above still applies to independently released
 `@polpo-ai/chat` UI props, theming, `@polpo-ai/ui` and `create-polpo-app`; this
 runtime recheck does not claim those external packages were retested or released.
+
+
+## Chat suggestions release tracking
+
+The current published runtime baseline is `0.16.0`. The Loop completion and
+request-context extension targets `0.16.1` (OSS PR #447). Its runtime/React
+contracts and limits are documented in the corresponding interaction references.
+This release note does not change the verification dates for unrelated features
+listed above. Channel suggestion rendering is not introduced by this extension.
