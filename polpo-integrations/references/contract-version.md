@@ -21,3 +21,12 @@ agent/custom-tool grants, the normal Polpo API key for application servers, and
 the self-hosted dashboard's `/data` page. Cloud adds Neon provisioning, Live/Test
 isolation, agent access administration and `polpo_databases_*` MCP/builder tools.
 Reference sources are OSS `docs/data.md` and Cloud `docs/docs/platform/data.mdx`.
+
+
+## Chat suggestions release tracking
+
+The current published runtime baseline is `0.16.0`. The Loop completion and
+request-context extension targets `0.16.1` (OSS PR #447). Its runtime/React
+contracts and limits are documented in the corresponding interaction references.
+This release note does not change the verification dates for unrelated features
+listed above. Channel suggestion rendering is not introduced by this extension.
