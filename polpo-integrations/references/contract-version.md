@@ -22,6 +22,25 @@ the self-hosted dashboard's `/data` page. Cloud adds Neon provisioning, Live/Tes
 isolation, agent access administration and `polpo_databases_*` MCP/builder tools.
 Reference sources are OSS `docs/data.md` and Cloud `docs/docs/platform/data.mdx`.
 
+## Connections release contract
+
+Reconciled on **2026-10-12** against OSS tag `v0.16.1`, the actual CLI help and
+Connection command tests. The Connector protocol/authentication model, reusable
+MCP OAuth setup, embedded account consent, customer OAuth clients and gateway /
+explicit direct-credential coexistence were released in OSS `0.16.0` (PR #445).
+Cloud consumption PR #474 is merged. These are no longer unpublished `0.15.144`
+development artifacts.
+
+The CLI already provides these operations; this skills update documents them
+without changing CLI or runtime behavior. Verify host catalog, setup readiness,
+account checks and grants separately. A package release does not establish that
+every catalog provider is certified, every managed app is configured, or every
+project rollout is enabled. Provider-specific public OAuth verification and
+legacy consumer migration are independent operational matters.
+
+Sources: OSS `packages/cli/src/commands/cloud/connections.ts`, its four Connection
+CLI test suites, `packages/connect/README.md`, `packages/connect/src/capability-resolver.ts`,
+and Cloud `docs/internal/connection-platform-strategy.md`.
 
 ## Chat suggestions release tracking
 

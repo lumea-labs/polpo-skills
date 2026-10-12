@@ -23,7 +23,13 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
 
 ## Invariants
 
+- A Connector defines API or MCP communication and supported authentication.
+  A Connection is one authorized account; an OAuth Client configures the consent app.
+  Managed versus customer-owned OAuth apps is independent of account ownership.
 - Connection IDs and credentials are not model-controlled tool arguments.
+- Use `mode: "gateway"` and `.request()` for brokered HTTP operations. Gateway
+  slots cannot read credentials. Direct `legacy_credentials` slots coexist and
+  require separate operator consent in Cloud; changing tool code is not consent.
 - `ToolInvocationContext` is copied, JSON-validated, deeply frozen, and host-owned.
 - `serverBindings` can read only supported immutable invocation paths.
 - Hidden bindings and Connection capabilities never enter model history or serialized tool
@@ -40,7 +46,11 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
   grants, retries and isolated gateway execution.
 - [references/custom-tools.md](references/custom-tools.md)
 - [references/trusted-context-and-bindings.md](references/trusted-context-and-bindings.md)
-- [references/connections.md](references/connections.md)
-- [references/mcp-and-oauth.md](references/mcp-and-oauth.md)
+- [references/connections.md](references/connections.md): domain model, grants,
+  gateway/direct coexistence and trusted account selection.
+- [references/connection-cli.md](references/connection-cli.md): existing CLI
+  setup, verification, OAuth applications and agent assignment commands.
+- [references/mcp-and-oauth.md](references/mcp-and-oauth.md): MCP discovery,
+  managed/customer OAuth and embedded account consent.
 - [references/packaging-and-runtime.md](references/packaging-and-runtime.md)
 - [references/contract-version.md](references/contract-version.md)
