@@ -57,3 +57,14 @@ the message array.
 Runtime suggestions have `{ id, label, prompt }`. `@polpo-ai/chat`'s presentational
 `ChatSuggestions` component uses `{ text, icon? }`; adapt `label` to `text` and send `prompt` on
 selection rather than assuming label and prompt are identical.
+
+In `0.16.1+`, successful Loops populate suggestions too. `useChat` opts in by default;
+set `suggestions: false` to disable, or use `{ maxItems: 5, guidance, context }`.
+`sendMessage(text, { suggestions: options })` and
+`continueToolResult(id, result, { idempotencyKey, loop, suggestions: options })`
+accept per-turn overrides. Overrides replace hook defaults rather than mutating them.
+
+State used as authoritative platform context must be set in the authenticated backend/proxy.
+It guides generation but does not replace permission/quota checks when an action is performed.
+Restore suggestions from the latest assistant message on reload; do not regenerate or offer
+historical suggestions after a newer user message. Keep the existing label-to-text adapter.
