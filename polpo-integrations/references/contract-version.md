@@ -44,8 +44,13 @@ and Cloud `docs/internal/connection-platform-strategy.md`.
 
 ## Chat suggestions release tracking
 
-The current published runtime baseline is `0.16.0`. The Loop completion and
-request-context extension targets `0.16.1` (OSS PR #447). Its runtime/React
-contracts and limits are documented in the corresponding interaction references.
-This release note does not change the verification dates for unrelated features
-listed above. Channel suggestion rendering is not introduced by this extension.
+OSS `0.16.2` is published. It includes the `0.16.1` Loop completion,
+request-context and five-item extension, plus a 15-second auxiliary deadline and
+agent reasoning precedence (OSS PRs #447/#448).
+
+The action suggestion contract targets `0.17.0` (OSS PR #449, release pending).
+It adds a message/action TypeScript union and caller-authored links/postbacks;
+use it only after the package and serving host are upgraded. Runtime and React
+references describe the contract; CLI/agent-directory settings are unchanged.
+Channel buttons/lists and shared Chat/Playground rendering are separate work.
+These notes do not change verification dates for unrelated features above.

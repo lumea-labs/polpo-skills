@@ -40,8 +40,9 @@ Use the high-level component for ordinary chat:
 <Chat agent="support" sessionId={sessionId} />
 ```
 
-Use `useChat` directly when the product needs durable delivery, custom interactions, explicit
-client tools, Loop continuation, or its own message composition.
+Use `useChat` directly when the product needs durable delivery, custom interactions, runtime
+suggestions, explicit client tools, Loop continuation, or its own message composition. A runtime
+SDK update alone does not wire suggestions into the independently released `Chat` adapter/UI.
 
 ## UI Invariants
 
@@ -52,6 +53,8 @@ client tools, Loop continuation, or its own message composition.
 - Continue tool results with a stable idempotency key and current Session version.
 - Suggestions belong to the assistant message that produced them and are actionable only while
   it remains the latest message.
+- Distinguish message suggestions from application actions before reading `prompt`. Link and
+  postback selection uses application-owned handlers; postbacks never become agent messages.
 - Attachments use typed content parts and authenticated file URL resolution; never place local
   filesystem paths in browser-visible messages.
 
