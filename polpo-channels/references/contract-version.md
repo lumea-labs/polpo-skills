@@ -26,3 +26,12 @@ This is an OSS contract recheck. It does not certify live provider authorization
 media delivery, Cloud deployment, or new receipt support. Conversation-bridge
 interfaces were reviewed from source; the passing test evidence above covers
 the Channel package and CLI.
+
+
+## Chat suggestions release tracking
+
+The current published runtime baseline is `0.16.0`. The Loop completion and
+request-context extension targets `0.16.1` (OSS PR #447). Its runtime/React
+contracts and limits are documented in the corresponding interaction references.
+This release note does not change the verification dates for unrelated features
+listed above. Channel suggestion rendering is not introduced by this extension.

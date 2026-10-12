@@ -33,9 +33,9 @@ Bind the completed Connection to the authenticated project and trusted principal
 Validate state, redirect allowlist, PKCE/provider requirements, expiry, replay, revoked consent,
 and granted scopes. OAuth completion does not automatically grant every agent or tool access.
 
-The in-development Connections contract also supports embedded MCP OAuth through
-a reusable host configuration. Verify the deployed host and CLI support before
-using it; the published Data release alone does not include these changes.
+The released Connections contract supports embedded MCP OAuth through a reusable
+host configuration. Inspect the host's catalog/readiness and rollout before using
+a provider; a protocol implementation is not proof of provider certification.
 Configure server URL, transport and `dynamic`, `metadata_document` or
 `pre_registered` registration with `polpo connections mcp configurations create
 <private-json-file>`. List configurations to obtain their IDs and revisions;
@@ -44,7 +44,7 @@ update/revoke requires `--revision`. Project scope is the default; use
 but no locally linked project. Client secrets stay in private files
 and encrypted storage, never shell arguments, agent JSON or conversations.
 
-The same unpublished contract includes **MCP OAuth setups** in project Connections
+The dashboard includes **MCP OAuth setups** in project Connections
 and organization administration. Copy the setup ID for CLI/SDK use; configuration
 and account consent are separate steps. An omitted registered-client secret is
 retained only for an unchanged server, transport, Connector/authentication method
@@ -62,3 +62,22 @@ customer application's identity on the provider consent screen. Both can use Pol
 callback and encrypted storage. Neither choice changes who owns the Connection or
 which agent grants are required. Application backends initiate end-user setup and
 invoke agents; direct provider proxying for application backends is outside scope.
+
+The provider hosts its consent screen. The application's button may lead directly
+to the provider using the setup start API, or through Polpo's optional setup page.
+Polpo still handles the callback, credential storage and refresh with either app
+ownership mode. Provider branding follows the selected OAuth Client; Polpo's
+callback does not force Polpo branding onto a customer's provider consent screen.
+
+Requested scopes must be supported by the Connector and OAuth application and
+actually granted by the provider. The consent app does not decide whether the
+resulting Connection is shared or end-user scoped in Polpo. Access to a shared
+Drive follows the connecting account's provider permissions; a separate OAuth
+application is not automatically required for every account or Drive.
+
+Use the trusted backend and a platform-scoped Polpo key to create embedded setup
+sessions. Approve exact HTTPS application return origins first, then bind the
+session to the authenticated user's namespaced subject. The browser receives only
+the expiring setup/authorization URL. Confirm completion from setup status, then
+grant the required agent tools explicitly. See [connection-cli.md](connection-cli.md)
+for the matching administrative commands.

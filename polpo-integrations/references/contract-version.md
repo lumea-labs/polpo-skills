@@ -22,13 +22,30 @@ the self-hosted dashboard's `/data` page. Cloud adds Neon provisioning, Live/Tes
 isolation, agent access administration and `polpo_databases_*` MCP/builder tools.
 Reference sources are OSS `docs/data.md` and Cloud `docs/docs/platform/data.mdx`.
 
-## Connections development contract
+## Connections release contract
 
-The Connections changes verified locally through 2026-10-11 include reusable MCP
-OAuth configurations, embedded setup, public callbacks, SDK/CLI configuration
-management and concurrent revocation fences. They use unpublished development
-artifacts whose source version still reads `0.15.144`; they are not part of the
-published Data release with that same number. Verify installed commands, exports,
-host endpoints and rollout before promising availability. Dashboard management of
-reusable MCP configurations and embedded consent have local browser acceptance;
-the coordinated OSS/Cloud release and deployed-consumer migration remain pending.
+Reconciled on **2026-10-12** against OSS tag `v0.16.1`, the actual CLI help and
+Connection command tests. The Connector protocol/authentication model, reusable
+MCP OAuth setup, embedded account consent, customer OAuth clients and gateway /
+explicit direct-credential coexistence were released in OSS `0.16.0` (PR #445).
+Cloud consumption PR #474 is merged. These are no longer unpublished `0.15.144`
+development artifacts.
+
+The CLI already provides these operations; this skills update documents them
+without changing CLI or runtime behavior. Verify host catalog, setup readiness,
+account checks and grants separately. A package release does not establish that
+every catalog provider is certified, every managed app is configured, or every
+project rollout is enabled. Provider-specific public OAuth verification and
+legacy consumer migration are independent operational matters.
+
+Sources: OSS `packages/cli/src/commands/cloud/connections.ts`, its four Connection
+CLI test suites, `packages/connect/README.md`, `packages/connect/src/capability-resolver.ts`,
+and Cloud `docs/internal/connection-platform-strategy.md`.
+
+## Chat suggestions release tracking
+
+The current published runtime baseline is `0.16.0`. The Loop completion and
+request-context extension targets `0.16.1` (OSS PR #447). Its runtime/React
+contracts and limits are documented in the corresponding interaction references.
+This release note does not change the verification dates for unrelated features
+listed above. Channel suggestion rendering is not introduced by this extension.
