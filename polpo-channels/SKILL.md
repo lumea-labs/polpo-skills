@@ -1,6 +1,6 @@
 ---
 name: polpo-channels
-description: Build, provision, configure, and debug Polpo messaging Channels for WhatsApp, Telegram, Slack, and Discord. Use for Connection/Channel/Route setup, verified webhooks, media and voice, message bursts, delivery, trusted identity resolution, Channel client tools, session routing, proactive sends, or provider-specific behavior.
+description: Build, provision, configure, and debug Polpo messaging Channels for WhatsApp, Telegram, Slack, and Discord. Use for Connection/Channel/Route setup, verified webhooks, media and voice, message bursts, delivery, trusted identity resolution, Channel client tools, session routing, interactive suggestions, proactive sends, or provider-specific behavior.
 ---
 
 # Polpo Channels
@@ -25,8 +25,8 @@ credentials or routing from an unverified webhook body.
 3. Complete callback verification or secure setup and confirm active state.
 4. Configure a trusted identity resolver before Session creation when provider identity must map
    to application user, tenant, workspace, epoch, or grant.
-5. Configure media, response segmentation, active-run coordination, and optional server-side
-   client tools according to provider capabilities.
+5. Configure media, response segmentation, active-run coordination, optional server-side
+   client tools, and opt-in suggestions according to provider capabilities.
 6. Test inbound verification, duplicate delivery, attachment handling, routing, model execution,
    outbound delivery, and retry behavior end to end.
 7. Treat provider acceptance, delivery, and read receipt as distinct states.
@@ -48,5 +48,7 @@ credentials or routing from an unverified webhook body.
 - [references/conversation-and-media.md](references/conversation-and-media.md)
 - [references/trusted-identity-and-tools.md](references/trusted-identity-and-tools.md)
 - [references/whatsapp.md](references/whatsapp.md)
+- [references/suggestions.md](references/suggestions.md) for buttons/lists, source binding,
+  selection admission, and rollback.
 - [references/operations-and-testing.md](references/operations-and-testing.md)
 - [references/contract-version.md](references/contract-version.md)
