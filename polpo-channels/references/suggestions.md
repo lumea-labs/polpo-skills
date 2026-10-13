@@ -1,6 +1,6 @@
 # Channel Conversation Suggestions
 
-Requires the 0.17.1 contract and an upgraded host. Check release tracking before
+Requires the 0.17.2 queue fix on every worker and an upgraded host. Check release tracking before
 using it; installing an SDK alone does not enable a managed Channel.
 
 ## Negotiate and preserve the source
@@ -31,6 +31,12 @@ bound to the installation/revision, thread, recipient and source answer, with a
 24-hour TTL. Preserve the provider's verified source message reference: WhatsApp
 `context.id` refers to the controls, while the incoming reply ID does not.
 
+After claiming a callback, the runtime queues a private reference through the
+Chat SDK message path. Dequeue resolves the claimed record and takes a separate
+atomic admission claim. Queue/burst batches keep selections as individual turns
+among ordinary message groups; they never become unverified free-form text.
+Private references are removed before host handlers receive the canonical prompt.
+
 The bridge re-resolves current identity, scope and Session, then checks the exact
 latest canonical source before admitting the original prompt. Keep that private
 selection provenance through the existing queue; never put it in public event
@@ -52,7 +58,9 @@ operation merely because sending its controls failed.
 
 Keep the reserved `polpo_suggestion:` callback guard even when disabled. Unknown,
 stale or malformed references cannot fall through to generic application actions.
-A binary downgrade must retain this guard while earlier controls remain visible.
+A binary downgrade must retain this guard and the internal queued-reference guard
+while earlier controls or queued selections remain. Upgrade all workers before
+enabling the feature so an older worker cannot misinterpret the queue format.
 
 Test signed button/list callbacks, duplicate clicks across two runtimes, stale
 sources after queueing, changed identity/grants, optional delivery failure and
