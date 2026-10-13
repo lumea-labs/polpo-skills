@@ -53,6 +53,8 @@ It adds a message/action TypeScript union and caller-authored links/postbacks;
 use it only after the package and serving host are upgraded. Runtime and React
 references describe the contract; CLI/agent-directory settings are unchanged.
 The Channel buttons/list contract is published in OSS `0.17.1` (OSS PR #450).
+Shared-queue selection admission across replicas requires `0.17.2` (publication
+pending); keep hosted Channel suggestions disabled until every worker is upgraded.
 Managed host wiring and real-device acceptance remain separate from the OSS
 package release. Shared Chat/Playground rendering is still a separate UI contract.
 These notes do not change verification dates for unrelated features above.
