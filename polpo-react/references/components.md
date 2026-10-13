@@ -122,8 +122,11 @@ Virtuoso-powered. Must be inside `<ChatProvider>`.
 />
 ```
 
-This is a presentational shape. Runtime-generated suggestions use `{ id, label, prompt }`; map
-`label` to `text` and retain `prompt` in the selection handler.
+This is a presentational shape, distinct from the runtime `ChatSuggestion` union. Its callback
+only identifies display text; do not use labels as unique IDs for mixed message/action lists.
+Use a whole-item/ID callback component or compose controls around `useChat` as described in
+[runtime-chat.md](runtime-chat.md). A runtime message has a distinct `label` and `prompt`;
+an action has no prompt. These component props refer to the separately versioned UI package.
 
 ## `<ChatAskUser>`
 

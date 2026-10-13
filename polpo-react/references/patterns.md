@@ -48,20 +48,30 @@ submit while continuation is pending.
 
 ## Suggestions
 
-Map runtime suggestions without losing the distinct prompt:
+Dispatch by kind. Preserve the item ID and order, display the label, and keep application
+actions separate from new user messages:
 
 ```tsx
-{chat.suggestions.map((suggestion) => (
-  <button
-    key={suggestion.id}
-    onClick={() => chat.sendMessage(suggestion.prompt)}
-  >
-    {suggestion.label}
-  </button>
-))}
+function selectSuggestion(suggestion: ChatSuggestion) {
+  if (suggestion.kind === "action") {
+    if (suggestion.action.type === "open_url") {
+      openTrustedLink(suggestion.action.url);
+    } else if (suggestion.action.type === "postback") {
+      dispatchAuthenticatedPostback(suggestion.action.value);
+    }
+    return;
+  }
+  if (suggestion.kind === undefined || suggestion.kind === "message") {
+    void chat.sendMessage(suggestion.prompt);
+  }
+}
 ```
 
-Do not reactivate historical suggestions after the user has sent a newer message.
+`ChatSuggestion` comes from the runtime SDK. `openTrustedLink` and
+`dispatchAuthenticatedPostback` are application-owned callbacks, not Polpo SDK methods.
+Validate historical shapes/links before rendering, disable selection while busy, and use
+native link semantics for URL controls when appropriate. Do not reactivate historical
+suggestions after the user has sent a newer message or turn a postback into a tool result.
 
 ## Client-Owned Tool
 

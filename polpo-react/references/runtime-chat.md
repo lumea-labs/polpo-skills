@@ -54,17 +54,30 @@ the message array.
 
 ## Suggestions
 
-Runtime suggestions have `{ id, label, prompt }`. `@polpo-ai/chat`'s presentational
-`ChatSuggestions` component uses `{ text, icon? }`; adapt `label` to `text` and send `prompt` on
-selection rather than assuming label and prompt are identical.
+Message suggestions have `{ id, label, prompt }`, with optional `kind: "message"` for legacy
+history. In 0.17.0, narrow `ChatSuggestion` before reading `prompt`: action items instead have
+`kind: "action"` and either `{ type: "open_url", url }` or `{ type: "postback", value }` in `action`.
+The consuming application owns link/postback handling and current authorization checks.
 
 In `0.16.1+`, successful Loops populate suggestions too. `useChat` opts in by default;
 set `suggestions: false` to disable, or use `{ maxItems: 5, guidance, context }`.
 `sendMessage(text, { suggestions: options })` and
 `continueToolResult(id, result, { idempotencyKey, loop, suggestions: options })`
-accept per-turn overrides. Overrides replace hook defaults rather than mutating them.
+accept per-turn overrides. Overrides replace hook defaults rather than mutating them. In
+0.17.0 these options also accept caller-authored `actions`; actions appear first, count toward
+`maxItems`, and are never executed by the hook. Send fresh actions on a continuation when the
+application state changes.
 
 State used as authoritative platform context must be set in the authenticated backend/proxy.
 It guides generation but does not replace permission/quota checks when an action is performed.
 Restore suggestions from the latest assistant message on reload; do not regenerate or offer
-historical suggestions after a newer user message. Keep the existing label-to-text adapter.
+historical suggestions after a newer user message. Validate unknown history shapes and link
+destinations before enabling controls; a TypeScript type is not a runtime trust check.
+
+The independently released `@polpo-ai/chat` presentational `ChatSuggestions` uses
+`{ text, icon? }` with a text-only selection callback. It cannot distinguish mixed items by
+label safely: labels may repeat. Reuse a whole-item/ID callback component where available or
+compose existing controls around `useChat`, preserving order and disabling selection while
+busy. Display `label`, send the exact `prompt` only for a message, open a validated link only
+on selection, and dispatch postbacks through an explicit application callback. Neither the
+shared `Chat` nor Playground adapters gain this wiring from the SDK version bump alone.
