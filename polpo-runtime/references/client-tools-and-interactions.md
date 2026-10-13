@@ -90,8 +90,12 @@ These are generation hints, not authorization or a hard guarantee about generate
 Enforce quotas and current action permissions in the application's handlers.
 
 `continueWithToolResult({ ..., capabilities: { suggestions: true } })` opts in on a client-tool
-handoff too. No suggestions are generated while waiting for a client tool, on Channel turns,
-on structured responses, or after a failed/aborted turn. Auxiliary failure/timeout is fail-open.
+handoff too. No suggestions are generated while waiting for a client tool, on structured
+responses, or after a failed/aborted turn. Auxiliary failure/timeout is fail-open.
+Channel turns require a compatible host opt-in from 0.17.1; older or unconfigured
+Channel hosts remain disabled. Channel questions remain unsupported. The additive
+`polpo.suggestionsSource.assistantMessageId` identifies the persisted owner of a
+returned list; custom Channel completion adapters must preserve it with the list.
 
 ## Application Actions (0.17.0+)
 
