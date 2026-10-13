@@ -48,7 +48,7 @@ OSS `0.16.2` is published. It includes the `0.16.1` Loop completion,
 request-context and five-item extension, plus a 15-second auxiliary deadline and
 agent reasoning precedence (OSS PRs #447/#448).
 
-The action suggestion contract targets `0.17.0` (OSS PR #449, release pending).
+The action suggestion contract is published in OSS `0.17.0` (OSS PR #449).
 It adds a message/action TypeScript union and caller-authored links/postbacks;
 use it only after the package and serving host are upgraded. Runtime and React
 references describe the contract; CLI/agent-directory settings are unchanged.
