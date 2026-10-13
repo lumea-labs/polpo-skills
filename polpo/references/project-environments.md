@@ -1,0 +1,39 @@
+# Project environments
+
+Status: unreleased work on `feat/project-environments`, inspected on 2026-10-14
+at OSS `76d285cc`, based on `0.17.2`. The published `0.17.2` package does not
+include this contract. Cloud provisioning, migration and UI are still pending.
+Verify installed command help and the serving host before using it.
+
+Exactly two environments belong to one project: Development and Production.
+Each has its own process, database capacity, files, sandbox, configuration,
+credentials and runtime state. Organization, membership and billing remain common.
+
+The new CLI defaults to Development on every invocation:
+
+```bash
+polpo deploy
+polpo deploy --prod
+polpo deploy --env development
+polpo deploy --env production
+polpo link --project-id <id> --prod
+polpo connections list --prod
+polpo data list --prod
+```
+
+`--prod` conflicts with `--env development`. Do not infer the target from Git,
+NODE_ENV, the dashboard, or the previous command. A missing Development target or
+credential is an error, never a reason to retry against Production. Organization
+OAuth app administration is unscoped and rejects environment flags.
+
+Use one `.polpo` source tree and deploy its definitions independently. Deploy does
+not discover/upload model keys, vault credentials or accumulated memory. Configure
+these explicitly in the intended environment. Existing `--include-tasks`,
+`--include-sessions` and `--all` explicitly import task/session state; `--all`
+does not include secrets or memory. Linking pulls definitions, not learned memory.
+
+The normal Polpo key authorizes the target including Data; Data does not get its
+own public key or independent environment selector. API/SDK calls without a
+selector follow the verified key/endpoint, rather than the CLI default.
+Legacy Test keys mixed a shared agent runtime with Data Test. Do not relabel them
+or move their data automatically; the managed migration must resolve that ambiguity.

@@ -2,6 +2,10 @@
 
 Use `polpo --help` and command-specific help as the final authority for the installed version.
 
+For the unreleased Development/Production targeting contract, read
+[project-environments.md](project-environments.md). Do not assume these flags or
+the definitions-only deploy behavior are present in older releases.
+
 ## Bootstrap
 
 ```bash

@@ -42,6 +42,8 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
 
 ## References
 
+- [references/project-environments.md](references/project-environments.md): Connection and
+  OAuth environment ownership, with the current release boundary.
 - [references/data-capability.md](references/data-capability.md): `ctx.data`, SQL queries,
   grants, retries and isolated gateway execution.
 - [references/custom-tools.md](references/custom-tools.md)

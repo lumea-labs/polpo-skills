@@ -39,6 +39,8 @@ execution mode; SSE is only a delivery transport.
 
 ## References
 
+- [references/project-environments.md](references/project-environments.md): SDK targeting,
+  key-bound defaults and continuation ownership; check the unreleased status first.
 - [references/application-data.md](references/application-data.md): typed records, scoped
   SQL, administrative migrations, HTTP routes and application authentication boundaries.
 - [references/completions-and-sessions.md](references/completions-and-sessions.md)
