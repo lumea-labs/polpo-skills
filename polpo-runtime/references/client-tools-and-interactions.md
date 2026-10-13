@@ -92,8 +92,9 @@ Enforce quotas and current action permissions in the application's handlers.
 `continueWithToolResult({ ..., capabilities: { suggestions: true } })` opts in on a client-tool
 handoff too. No suggestions are generated while waiting for a client tool, on structured
 responses, or after a failed/aborted turn. Auxiliary failure/timeout is fail-open.
-Channel turns require a compatible host opt-in from 0.17.1; older or unconfigured
-Channel hosts remain disabled. Channel questions remain unsupported. The additive
+Channel turns require explicit host opt-in and 0.17.2 or later for shared-queue
+selection admission across replicas; older or unconfigured hosts remain disabled.
+Channel questions remain unsupported. The additive
 `polpo.suggestionsSource.assistantMessageId` identifies the persisted owner of a
 returned list; custom Channel completion adapters must preserve it with the list.
 
