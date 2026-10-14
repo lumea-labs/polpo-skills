@@ -1,7 +1,7 @@
 # Project environments
 
 Status: unreleased work on `feat/project-environments`, inspected on 2026-10-14
-at OSS `76d285cc`, based on `0.17.2`. The published `0.17.2` package does not
+at OSS `84d3c9d1`, based on `0.17.2`. The published `0.17.2` package does not
 include this contract. Cloud provisioning, migration and UI are still pending.
 Verify installed command help and the serving host before using it.
 
@@ -25,6 +25,15 @@ polpo data list --prod
 NODE_ENV, the dashboard, or the previous command. A missing Development target or
 credential is an error, never a reason to retry against Production. Organization
 OAuth app administration is unscoped and rejects environment flags.
+
+With the matching Cloud release, browser login records the approving
+administrator and checks current membership. Headless `polpo login --api-key`
+validates ordinary environment keys through `/v1/credentials/current`; it does
+not need organization administration. Do not replace a correctly scoped key
+with a broader one just because old `/v1/orgs` discovery rejects it. A Production
+key still requires `--prod`; login never stores a Production default. Link reuses
+an existing environment credential without minting another key or writing that
+credential into `.env.local`. An administrator login can create the project key.
 
 Use one `.polpo` source tree and deploy its definitions independently. Deploy does
 not discover/upload model keys, vault credentials or accumulated memory. Configure
