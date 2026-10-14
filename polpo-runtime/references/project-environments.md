@@ -1,8 +1,9 @@
 # Project environment targeting
 
-Unreleased contract inspected on 2026-10-14 at OSS `76d285cc` (baseline `0.17.2`).
-Published `0.17.2` does not include it; Cloud runtime wiring is pending. Confirm
-both package and host support before using the option.
+Pre-release contract reconciled on 2026-10-14 against the current OSS and Cloud
+working branches (published baseline `0.17.2`). Published packages and deployed
+hosts may still predate it; confirm both package and host support before using
+the option.
 
 ```ts
 const development = new PolpoClient({ baseUrl, apiKey: developmentKey, environment: "development" });
@@ -23,4 +24,4 @@ separate trusted identity; do not replace it with the environment name.
 Self-hosted operators can bind a server using `ServerConfig.environment` or
 `POLPO_PROJECT_ENVIRONMENT`. Each instance needs separate stores, files and
 credentials; setting the name does not provision resources. Managed provisioning
-and load isolation require separate Cloud validation.
+and load isolation require the matching Cloud provisioning implementation.

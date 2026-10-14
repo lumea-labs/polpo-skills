@@ -18,8 +18,9 @@ not enable managed Cloud rollout or update a deployed host.
 
 The contract includes typed records, SQL queries/mutations and migrations,
 agent/custom-tool grants, the normal Polpo API key for application servers, and
-the self-hosted dashboard's `/data` page. Cloud adds Neon provisioning, Live/Test
-isolation, agent access administration and `polpo_databases_*` MCP/builder tools.
+the self-hosted dashboard's `/data` page. The current Cloud branch binds Neon,
+Data grants and `polpo_databases_*` MCP/builder tools to isolated Development and
+Production environments; published hosts may still expose the legacy Live/Test contract.
 Reference sources are OSS `docs/data.md` and Cloud `docs/docs/platform/data.mdx`.
 
 ## Connections release contract
@@ -62,9 +63,10 @@ These notes do not change verification dates for unrelated features above.
 
 ## Project environments development contract
 
-Inspected on **2026-10-14** at OSS `76d285cc`, based on `0.17.2`.
-Development/Production targeting is **unreleased**; the published `0.17.2`
-packages do not include it. Check installed CLI help/types and serving-host
-support. The OSS client/CLI contract is implemented and locally tested; managed
-provisioning, migration and the dashboard are not yet delivered. Do not infer
-Cloud availability or isolated managed resources from this source revision.
+Reconciled on **2026-10-14** against the current OSS and Cloud
+`feat/project-environments` working branches, based on published OSS `0.17.2`.
+Development/Production targeting remains pre-release: published `0.17.2` packages
+and deployed hosts may not include it. The working branches include the OSS
+client/CLI contract plus Cloud provisioning, authenticated routing and dashboard
+selection. Legacy project/key migration remains an explicit Cloud operation;
+never infer availability or migrate Live/Test state from names alone.

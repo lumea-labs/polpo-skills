@@ -1,9 +1,9 @@
 # Project environments
 
-Status: unreleased work on `feat/project-environments`, inspected on 2026-10-14
-at OSS `84d3c9d1`, based on `0.17.2`. The published `0.17.2` package does not
-include this contract. Cloud provisioning, migration and UI are still pending.
-Verify installed command help and the serving host before using it.
+Status: pre-release contract on `feat/project-environments`. The OSS runtime and
+CLI plus the companion Cloud provisioning, routing and dashboard implementation
+exist in the working branches. Published packages may still predate it, so verify
+installed command help and the serving host before using it.
 
 Exactly two environments belong to one project: Development and Production.
 Each has its own process, database capacity, files, sandbox, configuration,
@@ -41,8 +41,11 @@ these explicitly in the intended environment. Existing `--include-tasks`,
 `--include-sessions` and `--all` explicitly import task/session state; `--all`
 does not include secrets or memory. Linking pulls definitions, not learned memory.
 
-The normal Polpo key authorizes the target including Data; Data does not get its
-own public key or independent environment selector. API/SDK calls without a
-selector follow the verified key/endpoint, rather than the CLI default.
+The normal Polpo key authorizes the target including agents, Data, files,
+Connections and Channels; Data does not get its own public key or independent
+environment selector. API/SDK calls without a selector follow the verified
+key/endpoint, rather than the CLI default. The remote MCP endpoint defaults to
+Development for environment projects; bind Production explicitly with
+`/environments/production/v1/mcp`.
 Legacy Test keys mixed a shared agent runtime with Data Test. Do not relabel them
 or move their data automatically; the managed migration must resolve that ambiguity.
