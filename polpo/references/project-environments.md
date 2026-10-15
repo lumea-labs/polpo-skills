@@ -1,9 +1,9 @@
 # Project environments
 
-Status: pre-release contract on `feat/project-environments`. The OSS runtime and
-CLI plus the companion Cloud provisioning, routing and dashboard implementation
-exist in the working branches. Published packages may still predate it, so verify
-installed command help and the serving host before using it.
+Status: published in OSS `0.17.3`. The companion Cloud provisioning, routing and
+dashboard implementation is deployed behind the `projects-environments-mode`
+rollout. Verify the installed CLI and the selected project's rollout state: the
+first managed canary is migrated, while the global project migration has not run.
 
 Exactly two environments belong to one project: Development and Production.
 Each has its own process, database capacity, files, sandbox, configuration,

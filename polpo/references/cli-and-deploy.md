@@ -2,9 +2,10 @@
 
 Use `polpo --help` and command-specific help as the final authority for the installed version.
 
-For the unreleased Development/Production targeting contract, read
+Development/Production targeting is available from `0.17.3`; read
 [project-environments.md](project-environments.md). Do not assume these flags or
-the definitions-only deploy behavior are present in older releases.
+the definitions-only deploy behavior are present in older releases or on a
+managed project that has not entered the environment rollout.
 
 ## Bootstrap
 

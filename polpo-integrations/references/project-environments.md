@@ -1,8 +1,8 @@
 # Connection environment ownership
 
-Unreleased contract inspected on 2026-10-14 at OSS `76d285cc`, based on `0.17.2`.
-Published `0.17.2` lacks this selector. Cloud ownership, OAuth callback binding
-and migration work remain pending; verify host support before using it.
+Published in OSS `0.17.3` and reconciled on 2026-10-15 against the deployed Cloud
+canary. Managed routing, OAuth callback binding and isolated credentials require
+the selected project to have completed the Cloud environment migration.
 
 `PolpoConnectClient` accepts an optional immutable `environment` with the values
 `development` or `production`. It applies to API, MCP, OAuth, setup and gateway
