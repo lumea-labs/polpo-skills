@@ -41,11 +41,9 @@ package release. Shared Chat/Playground rendering is still a separate UI contrac
 These notes do not change verification dates for unrelated features above.
 
 
-## Project environments development contract
+## Project environments release contract
 
-Inspected on **2026-10-14** at OSS `76d285cc`, based on `0.17.2`.
-Development/Production targeting is **unreleased**; the published `0.17.2`
-packages do not include it. Check installed CLI help/types and serving-host
-support. The OSS client/CLI contract is implemented and locally tested; managed
-provisioning, migration and the dashboard are not yet delivered. Do not infer
-Cloud availability or isolated managed resources from this source revision.
+Reconciled on **2026-10-15** against published OSS `0.17.3` and the deployed
+Cloud canary. Environment-aware client, React provider and CLI targeting are
+published. Managed provisioning and dashboard selection remain rollout-gated per
+project; do not infer Cloud availability until that project's migration is complete.

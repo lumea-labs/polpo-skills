@@ -51,12 +51,11 @@ package release. Shared Chat/Playground rendering is still a separate UI contrac
 These notes do not change verification dates for unrelated features above.
 
 
-## Project environments development contract
+## Project environments release contract
 
-Reconciled on **2026-10-14** against the current OSS and Cloud
-`feat/project-environments` working branches, based on published OSS `0.17.2`.
-Development/Production targeting remains pre-release: published `0.17.2` packages
-and deployed hosts may not include it. The working branches include the OSS
-client/CLI contract plus Cloud provisioning, authenticated routing and dashboard
-selection. Legacy project/key migration remains an explicit Cloud operation;
-never infer availability or migrate Live/Test state from names alone.
+Reconciled on **2026-10-15** against published OSS `0.17.3` and the deployed
+Cloud canary. Development/Production targeting is available in the OSS client
+and CLI. Managed provisioning, authenticated routing and dashboard selection are
+rollout-gated per project; the global project migration has not run. Legacy
+project/key migration remains an explicit Cloud operation. Never infer
+availability or migrate Live/Test state from names alone.

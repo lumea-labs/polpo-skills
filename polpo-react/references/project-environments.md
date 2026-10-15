@@ -1,8 +1,7 @@
 # Environment-aware providers
 
-Unreleased contract inspected on 2026-10-14 at OSS `76d285cc`, based on `0.17.2`.
-Do not use the option with the published `0.17.2` packages or assume Cloud UI and
-runtime provisioning are already available.
+Published in OSS `0.17.3` and reconciled on 2026-10-15 against the deployed Cloud
+canary. Managed UI and runtime provisioning remain rollout-gated per project.
 
 On a supporting host, pass `environment="development"` or `"production"` to
 `PolpoProvider`. Omission follows the authenticated key/endpoint; no SDK default

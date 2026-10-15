@@ -1,9 +1,8 @@
 # Project environment targeting
 
-Pre-release contract reconciled on 2026-10-14 against the current OSS and Cloud
-working branches (published baseline `0.17.2`). Published packages and deployed
-hosts may still predate it; confirm both package and host support before using
-the option.
+Published in OSS `0.17.3` and reconciled on 2026-10-15 against the deployed Cloud
+canary. Managed support remains rollout-gated, so confirm both the installed
+package and the selected project's provisioning mode before using the option.
 
 ```ts
 const development = new PolpoClient({ baseUrl, apiKey: developmentKey, environment: "development" });
