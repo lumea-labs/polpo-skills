@@ -107,8 +107,8 @@ Paths below are relative to `/v1` in Cloud or `/api/v1` on the standard self-hos
 
 Cloud application servers use their normal Polpo API key, never Neon credentials.
 The key has full Data access within its existing organization/project scope, including schema
-administration. Live and Test keys select
-separate Data environments. Agent resource/table grants remain independent.
+administration. Development and Production keys select separate Data
+environments. Agent resource/table grants remain independent.
 Keep credentials server-side. Application user authentication and per-user row rules belong
 to the application; Data does not provide an end-user auth model.
 
@@ -131,7 +131,8 @@ The remote Cloud MCP and builder expose the same 14 account tools:
 - `polpo_databases_backend_get`, `polpo_databases_agent_grants_list`,
   `polpo_databases_agent_grants_set`.
 
-All take `projectId` and optional `environment: "live" | "test"` (default `live`).
+All take `projectId` and optional `environment: "development" | "production"`
+(default `development`).
 Resource operations take `resource` (UUID or logical name). Create, rename, additive
 migrate, transaction, query, mutate and SQL migrate take their canonical API payload
 inside `input`; delete takes `expectedVersion` directly. Grant replacement takes

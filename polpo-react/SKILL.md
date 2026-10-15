@@ -60,6 +60,8 @@ SDK update alone does not wire suggestions into the independently released `Chat
 
 ## References
 
+- [references/project-environments.md](references/project-environments.md): provider identity,
+  tab-local selection and late-response isolation; check package/host availability first.
 - [references/runtime-chat.md](references/runtime-chat.md): modern `useChat`, durability,
   interactions, skills, and continuation.
 - [references/components.md](references/components.md): component props.

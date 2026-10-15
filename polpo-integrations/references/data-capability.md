@@ -64,7 +64,8 @@ code; `ctx.data` is not a sandbox for arbitrary code. Managed execution uses iso
 Cloud keeps Neon credentials. Application servers use their normal Polpo API key with
 full Data access inside its existing organization/project scope and bound environment.
 That key's access does not replace or widen an agent's independent database grants.
-Live/Test are separate Data environments; durable project tasks and schedules use Live.
+Development and Production are separate Data environments; durable tasks and
+schedules stay inside the environment that owns them.
 Data itself supplies no application user authentication or per-user row authorization. Resolve
 user identity and application rules in trusted application code; a model-provided user ID is
 not an authorization decision. Do not use project deploy/pull as a database migration or

@@ -36,6 +36,8 @@ pulling resources do not synchronize database schemas, records, migration histor
 
 ## References
 
+- Read [references/project-environments.md](references/project-environments.md) when selecting
+  Development or Production. Check its release status before using the new flags.
 - Read [references/project-layout.md](references/project-layout.md) before creating or migrating
   `.polpo/` files.
 - Read [references/cli-and-deploy.md](references/cli-and-deploy.md) for bootstrap, linking,

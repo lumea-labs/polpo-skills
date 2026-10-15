@@ -77,8 +77,9 @@ without it, Data is unavailable. For CLI calls use a server-side `POLPO_API_KEY`
 
 Cloud provisions the managed application database on Neon and keeps provider credentials.
 Applications call Polpo's API using their normal Polpo key with full Data access
-inside its existing organization/project scope. Live and Test keys select separate
-Data environments; the CLI does not invent an `--environment` flag. The managed feature must
+inside its existing organization/project scope. Development and Production keys
+select separate Data environments; the CLI defaults to Development and accepts
+`--prod` or `--env production`. The managed feature must
 also be enabled by the host rollout configuration. Resources sharing a Neon branch share
 compute and backup/restore lifecycle; do not promise independent per-resource restore.
 
@@ -89,11 +90,11 @@ application repository when useful, then apply it through an explicit administra
 
 The self-hosted dashboard exposes **Databases** at `/data`: Schema and table selection, records,
 SQL query/mutation and migrations/history. It uses the configured runtime backend,
-without Cloud Live/Test or Neon provisioning controls. OSS agent grants remain
+without Cloud environment selection or Neon provisioning controls. OSS agent grants remain
 host configuration; the dashboard does not simulate Cloud grant endpoints.
 
 The remote Cloud MCP and builder expose `polpo_databases_*` administration tools
 using the signed-in account, explicit `projectId` and optional `environment`
-(default `live`). Use query for SQL reads, mutate for record writes and migrate
+(default `development`, or `production`). Use query for SQL reads, mutate for record writes and migrate
 for SQL schema changes. These account tools are distinct from the agent's
 grant-limited `database_*` tools; existing OAuth read/write permissions apply.

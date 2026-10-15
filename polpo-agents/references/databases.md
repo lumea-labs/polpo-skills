@@ -70,7 +70,7 @@ contain instructions and static tool policy; database resources and grants remai
 Project deployment and pull do not synchronize database schemas, records, migrations or grants.
 
 Grant revocation applies to subsequent operations, including cached agents and isolated custom
-tools. In Cloud, request-scoped execution uses the authenticated Live/Test environment;
-durable project tasks and schedules use Live. Sandbox Data capabilities expire within 31
-minutes; a longer task needs a new run to obtain renewed access. Data does not implement
+tools. In Cloud, request-scoped execution, durable tasks and schedules stay inside
+their selected Development or Production environment. Sandbox Data capabilities expire within
+31 minutes; a longer task needs a new run to obtain renewed access. Data does not implement
 application user authentication or per-user row rules.

@@ -39,3 +39,13 @@ Shared-queue selection admission across replicas is published in `0.17.2`
 Managed host wiring and real-device acceptance remain separate from the OSS
 package release. Shared Chat/Playground rendering is still a separate UI contract.
 These notes do not change verification dates for unrelated features above.
+
+
+## Project environments development contract
+
+Inspected on **2026-10-14** at OSS `76d285cc`, based on `0.17.2`.
+Development/Production targeting is **unreleased**; the published `0.17.2`
+packages do not include it. Check installed CLI help/types and serving-host
+support. The OSS client/CLI contract is implemented and locally tested; managed
+provisioning, migration and the dashboard are not yet delivered. Do not infer
+Cloud availability or isolated managed resources from this source revision.
