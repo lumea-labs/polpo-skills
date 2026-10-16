@@ -14,7 +14,7 @@ Treat the checked-out project and the installed CLI as authoritative. Do not rec
 2. Preserve an existing linked project. Create or link only when the user requests it or no
    project exists.
 3. Author resources in layout v2: project metadata, one directory per agent, project Loop
-   definitions, teams, skills, and the skill lockfile.
+  definitions, teams, skills, runtime hook packs, and the skill lockfile.
 4. Validate locally before deployment. Resolve unknown references and packaging failures rather
    than relying on a second identical deploy.
 5. Deploy through the CLI or supported workflow. Never place provider secrets in project files.
@@ -46,6 +46,8 @@ pulling resources do not synchronize database schemas, records, migration histor
   versus Cloud ownership or diagnosing managed-only behavior.
 - Read [references/databases.md](references/databases.md) for the Data CLI, database lifecycle,
   self-hosted configuration and managed boundaries.
+- Read [references/runtime-hooks.md](references/runtime-hooks.md) before adding lifecycle
+  interception, policy checks, audit callbacks, or bounded model/agent verifiers.
 - Read [references/contract-version.md](references/contract-version.md) before relying on exact
   fields or commands in a different Polpo release.
 

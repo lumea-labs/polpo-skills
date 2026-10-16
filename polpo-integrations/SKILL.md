@@ -20,6 +20,8 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
 6. Execute with bounded time, cancellation, sandbox policy, idempotency, and redacted trace data.
 7. Test denied scope, missing/ambiguous Connection, rotated credentials, timeout, retry, malformed
    result, and package dependency failures.
+8. When an integration runs from a Runtime Hook, preserve the same tool policy, Connection grant,
+   trusted invocation context, cancellation, and redaction checks as an ordinary agent tool call.
 
 ## Invariants
 
@@ -39,6 +41,8 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
   credentials or schema administration into model-visible tools.
 - Packaging failure is detected before deployment; runtime 502 is not an acceptable dependency
   discovery mechanism.
+- Runtime Hook JSON never contains credentials. Authenticated HTTP handlers name a Connection;
+  MCP and tool handlers still pass through the ordinary agent allowlist and Connection grants.
 
 ## References
 
@@ -55,4 +59,5 @@ The model expresses intent; the runtime resolves trusted context and capabilitie
 - [references/mcp-and-oauth.md](references/mcp-and-oauth.md): MCP discovery,
   managed/customer OAuth and embedded account consent.
 - [references/packaging-and-runtime.md](references/packaging-and-runtime.md)
+- [references/runtime-hooks.md](references/runtime-hooks.md)
 - [references/contract-version.md](references/contract-version.md)

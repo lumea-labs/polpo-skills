@@ -1,6 +1,6 @@
 ---
 name: polpo-runtime
-description: Integrate and operate the Polpo runtime through OpenAI-compatible completions and the Polpo SDK. Use for application Data through the SDK/API, Sessions, durable runs and SSE reconnect, Project Loops, tasks and missions, client-side tools, structured output, parallel tools, chat interactions, steering, schedules, runtime plans, or execution debugging.
+description: Integrate and operate the Polpo runtime through OpenAI-compatible completions and the Polpo SDK. Use for application Data through the SDK/API, Sessions, durable runs and SSE reconnect, Project Loops, tasks and missions, client-side tools, structured output, parallel tools, chat interactions, runtime hooks, steering, schedules, runtime plans, or execution debugging.
 ---
 
 # Polpo Runtime
@@ -36,6 +36,8 @@ execution mode; SSE is only a delivery transport.
 - Provider errors must become stable Polpo errors with the useful diagnostic preserved.
 - Application Data is independent of Session/runtime storage and file Volumes. Applications
   use their normal server-side Polpo API key; agent database grants are independent.
+- Runtime Hooks are trusted project policy resolved once per invocation. They may narrow or
+  transform an operation before the normal checks, but cannot grant a denied capability.
 
 ## References
 
@@ -50,6 +52,7 @@ execution mode; SSE is only a delivery transport.
 - [references/structured-and-parallel.md](references/structured-and-parallel.md)
 - [references/steering-and-runtime-plans.md](references/steering-and-runtime-plans.md)
 - [references/context-trust-and-guardrails.md](references/context-trust-and-guardrails.md)
+- [references/runtime-hooks.md](references/runtime-hooks.md)
 - [references/tasks-and-missions.md](references/tasks-and-missions.md)
 - [references/schedules.md](references/schedules.md)
 - [references/contract-version.md](references/contract-version.md)

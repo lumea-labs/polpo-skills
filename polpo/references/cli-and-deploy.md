@@ -36,10 +36,20 @@ project. There is no standalone public `polpo pull` command in this release.
 Before deployment:
 
 1. validate JSON and TypeScript resource definitions;
-2. verify every agent, skill, tool, Connection, and Loop reference;
+2. verify every agent, skill, tool, Connection, Hook, and Loop reference;
 3. ensure generated or local-only files are excluded;
 4. preserve the dependency order: tools and skills before Loops or agents that reference them;
 5. require a non-zero exit when any resource fails.
+
+Runtime Hooks are validated and inspected with:
+
+```bash
+polpo hooks validate
+polpo hooks list --local
+polpo hooks list
+```
+
+`polpo deploy` publishes hook packs before agents that reference them.
 
 Do not interpret a partially created resource as a successful deploy. A repeated identical
 deploy may be a useful idempotency test, but it is not a repair strategy.
