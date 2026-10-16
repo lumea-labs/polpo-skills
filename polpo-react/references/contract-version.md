@@ -47,3 +47,10 @@ Reconciled on **2026-10-15** against published OSS `0.17.3` and the deployed
 Cloud canary. Environment-aware client, React provider and CLI targeting are
 published. Managed provisioning and dashboard selection remain rollout-gated per
 project; do not infer Cloud availability until that project's migration is complete.
+
+## Runtime Hooks release contract
+
+Verified on **2026-10-17** against published OSS `0.18.7`. Runtime Hooks are
+server-side project policy and do not add a React chat frame or client-side
+execution API in this release. Existing streaming, Session and interaction
+contracts remain unchanged; managed Cloud availability is rollout-dependent.

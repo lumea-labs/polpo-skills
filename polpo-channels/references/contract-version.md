@@ -52,3 +52,10 @@ Reconciled on **2026-10-15** against published OSS `0.17.3` and the deployed
 Cloud canary. Environment-aware client and CLI targeting is published. Managed
 provisioning and isolated Channel state remain rollout-gated per project; do not
 infer Cloud availability until that project's migration is complete.
+
+## Runtime Hooks release contract
+
+Verified on **2026-10-17** against published OSS `0.18.7`. Channel-originated
+agent turns participate in the same Runtime Hooks lifecycle as direct chat.
+No new Channel configuration field or React transport contract is required;
+managed Cloud availability remains rollout-dependent.
