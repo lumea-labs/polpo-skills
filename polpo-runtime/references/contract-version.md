@@ -54,3 +54,11 @@ and CLI. Managed provisioning, authenticated routing and dashboard selection are
 rollout-gated per project; the global project migration has not run. Legacy
 project/key migration remains an explicit Cloud operation. Never infer
 availability or migrate Live/Test state from names alone.
+
+## Runtime Hooks release contract
+
+Verified on **2026-10-17** against published OSS `0.18.7`. Runtime Hooks use a
+versioned, redacted envelope and deterministic decision composition across direct
+chat, Run-backed chat, Channels and Project Loop agent nodes. `tool:before` remains
+before side effects; `turn:stop` permits at most one tool-free feedback recovery.
+Managed Cloud availability is rollout-dependent.

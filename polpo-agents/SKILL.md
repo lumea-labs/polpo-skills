@@ -1,6 +1,6 @@
 ---
 name: polpo-agents
-description: Design and configure current Polpo agents, including directory-based definitions, model profiles and routing, tool policies and loading, assigned skills and Loops, chat preferences, Memory, Knowledge, application database tool access, and sandbox defaults. Use when creating or changing an agent rather than invoking it.
+description: Design and configure current Polpo agents, including directory-based definitions, model profiles and routing, tool policies and loading, assigned skills, runtime hooks and Loops, chat preferences, Memory, Knowledge, application database tool access, and sandbox defaults. Use when creating or changing an agent rather than invoking it.
 ---
 
 # Polpo Agents
@@ -22,8 +22,8 @@ may narrow it but must never widen it.
    or Loop implicitly.
 6. Configure Memory and sandbox defaults only when the use case needs them. Keep Knowledge
    sources project-level rather than embedding them into agent instructions.
-7. Validate the materialized agent and every referenced model profile, tool, skill, MCP server,
-   volume, and Loop before deployment.
+7. Validate the materialized agent and every referenced model profile, tool, skill, hook pack,
+   MCP server, volume, and Loop before deployment.
 
 ## Invariants
 
@@ -37,6 +37,8 @@ may narrow it but must never widen it.
   directories do not own database schemas or expose administrative migration capabilities.
 - Trusted identity, grants, Connection references, and hidden tool bindings do not belong in
   model-visible agent configuration.
+- `hooks` names trusted packs from `.polpo/hooks`; packs cannot widen the agent's tool or model
+  policy and must not contain credentials.
 
 ## References
 

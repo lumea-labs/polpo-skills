@@ -13,6 +13,8 @@ Polpo project layout version 2 uses resource directories rather than aggregate a
 |   `-- customer-success.json
 |-- loops/
 |   `-- resolve-ticket.ts
+|-- hooks/
+|   `-- quality.json
 |-- skills/
 |   `-- support-playbook/
 |       |-- SKILL.md
@@ -56,6 +58,12 @@ maintaining an existing project.
 Skills are complete bundles, not only `SKILL.md`. Preserve `references/`, `scripts/`, `assets/`,
 and binary files. `.polpo/skills.lock.json` records installed sources and revisions; do not hand
 edit it unless repairing a documented migration.
+
+## Runtime Hooks
+
+Runtime hook packs live in `.polpo/hooks/<name>.json`. The filename and pack `name` must match.
+Agents opt into packs through their `hooks` array. Hook configuration is trusted project policy;
+never place credentials in it. Use a Connection for authenticated HTTPS handlers.
 
 ## Legacy Migration
 

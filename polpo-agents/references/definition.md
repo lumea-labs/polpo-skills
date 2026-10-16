@@ -20,6 +20,7 @@ timestamps are not authored. Therefore `agent.json` must not contain `name`, `sy
   "allowedTools": ["http_fetch", "search_*"],
   "toolLoading": { "mode": "auto" },
   "skills": ["support-playbook"],
+  "hooks": ["quality"],
   "assignedLoops": ["resolve-ticket"],
   "maxTurns": 40,
   "chat": {
@@ -37,6 +38,7 @@ timestamps are not authored. Therefore `agent.json` must not contain `name`, `sy
 - `toolLoading.mode` is `auto`, `direct`, or `progressive`.
 - `chat.allowedTools` and `channels.allowedTools` narrow tool exposure by conversational mode.
 - `skills` and `mcpServers` attach reusable capabilities.
+- `hooks` attaches trusted project runtime hook packs by name.
 - `assignedLoops` limits Project Loops the agent may execute.
 - `executionRouter` optionally chooses direct execution or an assigned Loop.
 - `sandbox` defines default isolation, release lifecycle, and allowed named volumes.
