@@ -1,0 +1,83 @@
+{
+  "skill_name": "polpo-skills",
+  "description": "Realistic prompts for checking that each skill triggers and leads to a correct result. Run each with and without the pack (see the skill-creator workflow) and compare.",
+  "evals": [
+    {
+      "id": 1,
+      "skill": "polpo",
+      "prompt": "I just ran `npx @polpo-ai/cli create` in my repo. Add a support agent that answers order questions using gpt-5, deploy it, and give me a curl command to test it.",
+      "expected_output": "Creates .polpo/agents/support/agent.json (no name/systemPrompt) and instructions.md, runs or proposes `polpo deploy`, and gives a curl to $POLPO_URL/v1/chat/completions with the Bearer key from .env.local.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "skill": "polpo",
+      "prompt": "we can't use polpo cloud for compliance reasons. how do I run polpo on our own k8s and is whatsapp supported there?",
+      "expected_output": "Explains the self-hosted runtime (Docker image/compose, port 3890, /api/v1, POLPO_API_KEY required or the API is open), and that Channels exist in OSS but must be embedded via the `channels` server option with shared Redis state; does not claim `polpo deploy` works against self-host.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "skill": "polpo-agents",
+      "prompt": "The analyst agent in .polpo/agents/analyst keeps saying it has no tool to query our sales database. The database is called sales and was created in the dashboard. Fix it.",
+      "expected_output": "Adds database_* tools (at least database_list/describe/query) to allowedTools AND explains the agent must be granted read access on the sales database in the dashboard Access tab; does not put grants or credentials in agent.json.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "skill": "polpo-agents",
+      "prompt": "Make all our agents share one model setting so I can switch from gpt-5 to claude in one place later.",
+      "expected_output": "Proposes a model profile (dashboard model settings in Cloud or settings.modelProfiles self-hosted) and changes agents to { \"profile\": \"...\" }; warns that editing the profile affects every agent using it.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "skill": "polpo-runtime",
+      "prompt": "Our Next.js API route calls the Polpo agent with the SDK, but on Vercel the function times out after 60s and the user loses the answer. The agent sometimes runs 5 minutes. What should I change?",
+      "expected_output": "Uses durable delivery (polpo.delivery.onDisconnect: \"continue\"), keeps runId/lastEventId, reconnects with resume or GET /v1/runs/{id}/events, and explicitly says not to resend the completion request.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "skill": "polpo-runtime",
+      "prompt": "Every weekday at 7am Rome time I want the reporting agent to run our daily-report loop. Set it up in the repo.",
+      "expected_output": "Writes .polpo/schedules/<name>.json with timing kind cron + timezone Europe/Rome, invocation surface agent with agentName, input.prompt, and execution.loop; mentions deploy and how to verify with a once schedule.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "skill": "polpo-integrations",
+      "prompt": "Each of our customers should connect their own Google Drive so the assistant can read their files. How do I wire that up from our backend?",
+      "expected_output": "Uses end-user Connections with a setup session created by the trusted backend (subject external_user + namespace), sends only the setup/authorization URL to the browser, grants the agent tool slot explicitly, and never lets the model choose a Connection ID.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "skill": "polpo-integrations",
+      "prompt": "write a polpo tool that fetches an invoice from our billing API by invoice number. the API needs a bearer token and the tenant id comes from our app session",
+      "expected_output": "defineTool in .polpo/tools/*.ts with a minimal parameters schema (invoice number only), a gateway Connection slot instead of a token, tenantId via bindingsSchema/serverBindings from invocation metadata, and testing with `polpo tools run`.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "skill": "polpo-channels",
+      "prompt": "Connect our support agent to our WhatsApp Business number. The channel has been 'pending' for an hour.",
+      "expected_output": "Uses polpo channels add whatsapp with a Connection and destination, explains pending means Meta has not completed the webhook challenge, points to setup-status and the callback URL, and does not try to force the status to active.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "skill": "polpo-react",
+      "prompt": "Add a chat page to our Next.js app for the 'support' Polpo agent. Users are logged in with NextAuth.",
+      "expected_output": "Uses PolpoProvider + Chat or useChat behind a server proxy route that checks the NextAuth session and adds the API key; sets apiPrefix for Cloud behind the proxy; never exposes POLPO_API_KEY to the client.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "skill": "polpo-react",
+      "prompt": "In my polpo chat UI the assistant reply shows up twice after the user's network drops and comes back.",
+      "expected_output": "Identifies duplicated optimistic/client state versus the canonical Session after reconnect; uses durable useChat, treats server history as the source of truth, and does not resend the user message.",
+      "files": []
+    }
+  ]
+}

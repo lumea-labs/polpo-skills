@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -13,6 +13,9 @@ const expectedSkills = [
   "polpo-react",
   "polpo-runtime",
 ];
+const MAX_DESCRIPTION_CHARS = 1024;
+const MIN_DESCRIPTION_CHARS = 120;
+const MAX_SKILL_LINES = 500;
 const errors = [];
 
 function read(path) {
@@ -42,6 +45,17 @@ function parseFrontmatter(source, file) {
   return values;
 }
 
+function markdownLinks(markdown) {
+  return [...markdown.matchAll(/\[[^\]]+\]\(([^)#]+\.md)(?:#[^)]+)?\)/g)].map((match) => match[1]);
+}
+
+const ossRoot = resolve(process.env.POLPO_OSS_ROOT ?? join(root, "..", "polpo"));
+const corePackage = join(ossRoot, "packages", "core", "package.json");
+const currentVersion = existsSync(corePackage) ? JSON.parse(read(corePackage)).version : null;
+if (!currentVersion) {
+  console.warn(`Polpo OSS checkout not found at ${ossRoot}; skipping the version freshness check.`);
+}
+
 for (const name of expectedSkills) {
   const directory = join(root, name);
   const entrypoint = join(directory, "SKILL.md");
@@ -53,8 +67,19 @@ for (const name of expectedSkills) {
   const source = read(entrypoint);
   const frontmatter = parseFrontmatter(source, entrypoint);
   if (frontmatter.name !== name) errors.push(`${entrypoint}: frontmatter name must be ${name}`);
-  if (!frontmatter.description || frontmatter.description.length < 30) {
-    errors.push(`${entrypoint}: description is missing or not discriminating`);
+  const description = frontmatter.description ?? "";
+  if (description.length < MIN_DESCRIPTION_CHARS) {
+    errors.push(`${entrypoint}: description is missing or too short to trigger reliably`);
+  }
+  if (description.length > MAX_DESCRIPTION_CHARS) {
+    errors.push(`${entrypoint}: description is ${description.length} characters (limit ${MAX_DESCRIPTION_CHARS})`);
+  }
+  if (!/\buse (this|it) whenever\b/i.test(description)) {
+    errors.push(`${entrypoint}: description should say when to use the skill ("Use this whenever ...")`);
+  }
+  const lineCount = source.split("\n").length;
+  if (lineCount > MAX_SKILL_LINES) {
+    errors.push(`${entrypoint}: ${lineCount} lines; move detail into references/ (limit ${MAX_SKILL_LINES})`);
   }
 
   const metadata = join(directory, "agents", "openai.yaml");
@@ -70,17 +95,36 @@ for (const name of expectedSkills) {
   const contractVersion = join(directory, "references", "contract-version.md");
   if (!existsSync(contractVersion)) {
     errors.push(`${name}: missing references/contract-version.md`);
+  } else {
+    const declared = read(contractVersion).match(/^verified-against: `([^`]+)`$/m)?.[1];
+    if (!declared) {
+      errors.push(`${contractVersion}: missing a "verified-against: \`x.y.z\`" line`);
+    } else if (currentVersion && declared !== currentVersion) {
+      errors.push(`${contractVersion}: verified against ${declared}, but Polpo OSS is ${currentVersion}; re-check the skill and update it`);
+    }
+  }
+
+  // Every reference must be reachable from SKILL.md, or the agent never loads it.
+  const referencesDir = join(directory, "references");
+  if (existsSync(referencesDir)) {
+    const linked = new Set(markdownLinks(source).map((link) => resolve(directory, link)));
+    for (const file of markdownFiles(referencesDir)) {
+      if (!linked.has(file)) errors.push(`${relative(root, file)}: not linked from ${name}/SKILL.md`);
+    }
   }
 
   for (const file of markdownFiles(directory)) {
     const markdown = read(file);
     if (/\[TODO(?::|\])/i.test(markdown)) errors.push(`${file}: unfinished TODO placeholder`);
+    // Release bookkeeping belongs in CHANGELOG.md, which coding agents never load.
+    if (/release tracking|\bPRs? #\d+/i.test(markdown)) {
+      errors.push(`${file}: contains release bookkeeping; move it to CHANGELOG.md`);
+    }
 
-    const links = markdown.matchAll(/\[[^\]]+\]\(([^)#]+\.md)(?:#[^)]+)?\)/g);
-    for (const link of links) {
-      const target = resolve(dirname(file), link[1]);
+    for (const link of markdownLinks(markdown)) {
+      const target = resolve(dirname(file), link);
       if (!existsSync(target) || !statSync(target).isFile()) {
-        errors.push(`${file}: broken Markdown link ${link[1]}`);
+        errors.push(`${file}: broken Markdown link ${link}`);
       }
     }
   }
@@ -89,7 +133,6 @@ for (const name of expectedSkills) {
 const allowedLegacyFiles = new Set([
   join(root, "polpo", "SKILL.md"),
   join(root, "polpo", "references", "project-layout.md"),
-  join(root, "polpo-agents", "references", "contract-version.md"),
 ]);
 for (const name of expectedSkills) {
   for (const file of markdownFiles(join(root, name))) {
@@ -101,15 +144,11 @@ for (const name of expectedSkills) {
   }
 }
 
-const ossRoot = resolve(process.env.POLPO_OSS_ROOT ?? join(root, "..", "polpo"));
-const corePackage = join(ossRoot, "packages", "core", "package.json");
-if (existsSync(corePackage)) {
-  const currentVersion = JSON.parse(read(corePackage)).version;
-  for (const name of expectedSkills) {
-    const contract = join(root, name, "references", "contract-version.md");
-    if (existsSync(contract) && !read(contract).includes(`\`${currentVersion}\``)) {
-      errors.push(`${contract}: does not declare current OSS version ${currentVersion}`);
-    }
+const evals = join(root, "evals", "evals.json");
+if (existsSync(evals)) {
+  const parsed = JSON.parse(read(evals));
+  for (const entry of parsed.evals ?? []) {
+    if (!expectedSkills.includes(entry.skill)) errors.push(`${basename(evals)}: eval ${entry.id} names unknown skill ${entry.skill}`);
   }
 }
 
@@ -119,4 +158,4 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log(`Validated ${expectedSkills.length} Polpo skills.`);
+console.log(`Validated ${expectedSkills.length} Polpo skills${currentVersion ? ` against Polpo OSS ${currentVersion}` : ""}.`);

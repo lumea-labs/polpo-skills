@@ -5,18 +5,18 @@
 Declare standard OpenAI function tools when the calling application owns the action:
 
 ```ts
-const response = await client.chatCompletions({
-  agent: "leo",
-  messages: [{ role: "user", content: "Configure commerce" }],
+const direct = client.chatCompletionsStream({
+  agent: "support",
+  messages: [{ role: "user", content: "Change my notification settings" }],
   tools: [{
     type: "function",
     function: {
-      name: "configure_site_module",
-      description: "Open the module configuration UI.",
+      name: "open_settings_panel",
+      description: "Open a settings panel in the app.",
       parameters: {
         type: "object",
-        properties: { module: { type: "string" } },
-        required: ["module"],
+        properties: { panel: { type: "string" } },
+        required: ["panel"],
         additionalProperties: false,
       },
       strict: true,
@@ -27,18 +27,37 @@ const response = await client.chatCompletions({
 });
 ```
 
-Polpo returns the call and never executes it server-side. Client tools are direct-chat
-capabilities and cannot be injected into an already-running Project Loop.
+Polpo returns the tool call to you and never runs it on the server.
 
 ## Continuation
 
-Use `continueWithToolResult` with the canonical Session ID/version, pending tool-call ID, and a
-stable idempotency key. Omit `loop` to continue direct chat or set a fixed authorized Loop name to
-transition into a durable Loop.
+Use a stream for the first request: only `ChatCompletionStream` exposes the `sessionId` and
+`sessionVersion` that a continuation needs. Collect the tool call from the chunks
+(`delta.tool_calls`), run the tool in your app, then send its result. Do not add the assistant
+and tool messages to `messages` yourself:
 
-The continuation appends exactly one matching tool result, reconstructs canonical history, and
-preserves trusted identity. Retries with the same key and payload are idempotent. Changed payload,
-stale version, wrong scope, unknown call, or already-resolved call fails deterministically.
+```ts
+for await (const chunk of direct) {
+  // render text; accumulate chunk.choices[0]?.delta?.tool_calls into `call`
+}
+const result = await openSettingsPanel(JSON.parse(call.function.arguments));
+
+const next = client.continueWithToolResult({
+  agent: "support",
+  sessionId: direct.sessionId!,
+  sessionVersion: direct.sessionVersion!,   // a stale version is rejected
+  toolCallId: call.id,
+  result: JSON.stringify(result),
+  idempotencyKey: `settings-${call.id}`,
+  // loop: "apply-settings",       // optional: continue into an assigned Project Loop
+});
+for await (const chunk of next) { /* stream the agent's reply */ }
+```
+
+Retrying with the same key and the same result is safe. A different result under the same key,
+a stale `sessionVersion`, an unknown call ID, or a call that was already answered is rejected.
+Request-declared client tools are rejected when the request sets a `loop`, and must not be
+declared again on a continuation.
 
 ## Ask User And Suggestions
 
@@ -56,7 +75,7 @@ polpo: {
 `ask_user_question` may end a direct turn with `finish_reason: "ask_user"`. Continue with the
 matching tool result, not a fabricated user/tool history pair.
 
-Message suggestions contain `id`, `label`, and the exact next-message `prompt`. In 0.17.0,
+Message suggestions contain `id`, `label`, and the exact next-message `prompt`. From 0.17.0,
 application actions can join the same list as described below. Polpo persists the list on the
 assistant message that produced it; offer it as active only while that message is latest.
 
@@ -67,8 +86,7 @@ presentation and the Session conversation. The same array is persisted on the as
 message and streamed in a root `polpo.suggestions` chunk before `stop` and `[DONE]`.
 Durable replay returns the original array; it does not regenerate it.
 Keep consuming after the final text until terminal events arrive: the auxiliary generation
-may still be running. In 0.16.2 the total auxiliary deadline is 15 seconds, including Loop
-history/model preparation; timeout preserves the successful primary response.
+may still be running. Suggestion generation gives up after 15 seconds; the main answer is kept.
 
 Keep `suggestions: true`, or pass request-scoped options:
 

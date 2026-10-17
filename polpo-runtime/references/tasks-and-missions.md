@@ -11,21 +11,21 @@ runtime primitive.
 - Use a Schedule to trigger an agent, Loop, Task, Mission, or webhook at a time boundary supported
   by the current invocation contract.
 
-## Task Safety
+## Tasks
 
-Create the task record before execution and persist status transitions monotonically. Expectations
-such as file existence, tests, scripts, or review are verification gates; do not infer success
-only from assistant text. Register produced artifacts through `register_outcome` so UI and APIs
-can retrieve them without relying on ephemeral sandbox paths.
+Create with `client.createTask({ ... })`. Give the task expectations (files that must exist,
+tests or scripts that must pass, a review) so success is checked, not assumed from the agent's
+final message. Ask agents to register produced files with the `register_outcome` tool; sandbox
+paths disappear, registered outcomes stay retrievable from the API and UI.
 
-Retry only retryable failures and retain the original attempt/error history. Idempotency and
-external side effects must be handled explicitly.
+Retry only failures marked retryable; the previous attempts and errors stay in the history. If
+the task has external side effects (emails, payments), make them idempotent yourself.
 
-## Mission Safety
+## Missions
 
-Validate dependency graphs and reject cycles or unknown nodes before starting. Persist checkpoints
-and approvals so resume does not rerun completed work. Mission scheduling is legacy composition;
-new time triggers should use Schedules and invoke the intended runtime surface explicitly.
+Create with `client.createMission({ ... })`. The runtime rejects dependency cycles and unknown
+tasks before starting, and resumes from checkpoints without rerunning finished tasks. For new
+time-based triggers use Schedules, not mission scheduling.
 
 Use current SDK types or server schemas for exact payloads. Do not copy old mission-centric
 schedule shapes from aggregate `.polpo` files.

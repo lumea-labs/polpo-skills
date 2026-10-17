@@ -55,15 +55,15 @@ the message array.
 ## Suggestions
 
 Message suggestions have `{ id, label, prompt }`, with optional `kind: "message"` for legacy
-history. In 0.17.0, narrow `ChatSuggestion` before reading `prompt`: action items instead have
+history. From 0.17.0, narrow `ChatSuggestion` before reading `prompt`: action items instead have
 `kind: "action"` and either `{ type: "open_url", url }` or `{ type: "postback", value }` in `action`.
 The consuming application owns link/postback handling and current authorization checks.
 
-In `0.16.1+`, successful Loops populate suggestions too. `useChat` opts in by default;
+From 0.16.1, successful Loops produce suggestions too. `useChat` opts in by default;
 set `suggestions: false` to disable, or use `{ maxItems: 5, guidance, context }`.
 `sendMessage(text, { suggestions: options })` and
 `continueToolResult(id, result, { idempotencyKey, loop, suggestions: options })`
-accept per-turn overrides. Overrides replace hook defaults rather than mutating them. In
+accept per-turn overrides. Overrides replace hook defaults rather than mutating them. From
 0.17.0 these options also accept caller-authored `actions`; actions appear first, count toward
 `maxItems`, and are never executed by the hook. Send fresh actions on a continuation when the
 application state changes.

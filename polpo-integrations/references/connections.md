@@ -50,11 +50,11 @@ Custom tools declare logical slots rather than Connection IDs:
 
 ```ts
 connections: {
-  siteApi: {
-    provider: "sitoinchat",
+  crm: {
+    provider: "acme_crm",
     mode: "gateway",
-    scopes: ["site:read"],
-    description: "Read the authorized site",
+    scopes: ["contacts:read"],
+    description: "Read the tenant's CRM",
   },
 }
 ```
@@ -64,7 +64,7 @@ one active matching Connection. Resolution must fail closed when scope is denied
 matches, more than one matches, the slot is invalid, or the resolver is unavailable.
 
 The example assumes a configured custom HTTP Connector with a matching request policy.
-Tool code calls `ctx.connections.require("siteApi").request({ method: "GET", path: "/site" })`.
+Tool code calls `ctx.connections.require("crm").request({ method: "GET", path: "/contacts" })`.
 The host attaches credentials outside the sandbox; the model receives only the tool result.
 Gateway and direct credentials coexist. For Git, HMAC, binary uploads or a client
 library that needs its own credential, declare `mode: "legacy_credentials"` and
@@ -88,15 +88,15 @@ polpo connections grants
 polpo connections bind CONNECTION_ID --binding BINDING_JSON
 polpo connections bind CONNECTION_ID --clear
 polpo connections grant-slot CONNECTION_ID \
-  --agent leo --tool site_context_get --scope site:read
+  --agent support --tool crm_contact_get --scope contacts:read
 polpo connections grant-slot CONNECTION_ID \
-  --agent leo --tool repository_checkout --scope repo --credential-slot github
+  --agent support --tool repository_checkout --scope repo --credential-slot github
 polpo connections grant-slot CONNECTION_ID \
-  --agent leo --tool repository_checkout --clear-credential-access
+  --agent support --tool repository_checkout --clear-credential-access
 polpo connections revoke-slot GRANT_ID
 polpo connections readiness \
-  --agent leo --tool site_context_get --slot siteApi \
-  --provider sitoinchat --scope site:read \
+  --agent support --tool crm_contact_get --slot crm \
+  --provider acme_crm --scope contacts:read \
   --user USER_ID --metadata '{"connectionNamespace":"my-app"}'
 ```
 
@@ -104,8 +104,8 @@ Use the installed CLI help for exact binding input flags. Binding dimensions may
 principal, tenant, and resource identifiers. Scope changes should be possible without rotating
 unrelated provider credentials when the provider grant remains valid.
 
-`readiness` must report status, required versus granted scopes, slot ambiguity, and unresolved
-trusted selectors before a run starts.
+Run `readiness` before a real run. It reports status, required versus granted scopes, whether
+several accounts match, and which trusted selectors are missing.
 The generic readiness probe checks gateway access without exporting a secret;
 it does not prove direct credential consent. Omitted `credentialSlots` preserves
 active consent; `[]` clears it. Revoked grants need fresh explicit consent when

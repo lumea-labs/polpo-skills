@@ -22,9 +22,13 @@ The agent-scoped API is:
 - `PATCH /v1/agents/{agentName}/memory/items/{itemId}` to update mutable fields.
 - `DELETE /v1/agents/{agentName}/memory/items/{itemId}` to forget the item.
 
-Retrieval should be bounded, policy-controlled, and relevant to the current invocation. The host
-must authorize scope before retrieval and record safe audit metadata. An agent can use Memory,
-but Memory remains data collected over time rather than part of its static definition.
+Retrieval is bounded and limited to the scopes the current request is authorized for, so pass
+the end user's ID as `user` on requests when Memory should be per-user. Memory is data collected
+over time, not part of the agent's definition, so it is not deployed from `agent.json`.
+
+In Polpo Cloud, automatic learning can propose Memory items. Review them with
+`polpo memory candidates list --agent <agent> --user <external-user-id>`, then `approve`,
+`reject`, or `apply` with the `--revision` shown.
 
 The files `.polpo/memory.md` and `.polpo/memory/{agent}.md` belong to the legacy static prompt
 memory contract. They are not a serialization of Memory V2 items. Do not use them when a task
@@ -52,13 +56,11 @@ the internal name `brain`, including these REST paths and tool names:
 - `POST /v1/brain/search` searches authorized sources within a token budget.
 - `brain_search` and `source_read` are the optional explicit runtime tools.
 
-Cloud exposes these REST paths through the project data plane for both dashboard sessions and
-project-scoped API keys. Invalid bodies, filters, cursors, and bounds fail with HTTP 400 and the
-stable `{ ok: false, code: "invalid_request", error: "Invalid Brain request" }` compatibility
-envelope; clients must not depend on raw validator details.
+In Cloud these paths are under `/v1` and accept project API keys. Invalid input returns HTTP 400
+with `{ ok: false, code: "invalid_request" }`; do not parse the validator details.
 
-Source inputs support `paste`, `file`, `url`, and `connection` in the OSS contract. Hosted Cloud
-must reject local files and unsafe/private URLs at ingestion. The current dashboard exposes text
+Source inputs are `paste`, `file`, `url`, and `connection`. Cloud rejects local files and
+private or unsafe URLs. The current dashboard exposes text
 and public URL ingestion. Knowledge sources are managed through dashboard, API, or SDK; they are
 not deployed from a `.polpo/knowledge` directory today.
 
@@ -68,14 +70,13 @@ for the current query and source grants. Explicit tools are separate: expose `br
 successful management search does not prove runtime injection; use the agent runtime-context
 inspection endpoint or a real completion to verify the grant and retrieval path.
 
-Reindexing must retain prior versions for bounded historical reads while moving
-`currentVersion` atomically. Deletion must remove the source from current retrieval immediately.
-Never treat labels, source order, or model recollection as evidence that retrieval occurred; use
-the returned citation identity `sourceId@version#chunkId`.
+Reindexing publishes a new version and keeps older versions readable. Deleting a source removes
+it from retrieval immediately. To confirm that retrieval happened, look for a citation of the
+form `sourceId@version#chunkId` in the result, not for the model saying it remembers.
 
 ## Verification
 
-Before declaring either primitive operational, verify:
+Before telling the user Memory or Knowledge works, test:
 
 1. Positive retrieval through the actual agent and expected scope/grant.
 2. No retrieval after removing the grant or changing the external-user scope.

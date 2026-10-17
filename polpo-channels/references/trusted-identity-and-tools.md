@@ -2,8 +2,13 @@
 
 ## Identity Resolver
 
-Call a host-controlled HTTPS resolver before agent selection, Session creation, Memory retrieval,
-model invocation, or tools. Authenticate it with a project Connection.
+An identity resolver is an HTTPS endpoint in your application. For every incoming message,
+Polpo calls it first, before choosing a Session, reading Memory, or running the model, to learn
+which of your users is writing. Polpo authenticates to it with a project Connection, configured
+with `--identity-resolver-endpoint`, `--identity-resolver-connection`, and
+`--identity-resolver-timeout` on `polpo channels add` or `update`.
+
+Your endpoint answers with:
 
 ```json
 {
@@ -34,9 +39,9 @@ does not leak into it.
 
 ## Server-Side Client Tools
 
-Messaging clients cannot execute browser-side OpenAI tools. Configure typed function schemas and
-a fixed HTTPS handler. Polpo controls endpoint, Connection, allowed tools, and optional Loop; the
-model cannot substitute them.
+A phone has no browser to run client-side tools, so on a Channel your server runs them. Configure
+typed function schemas and a fixed HTTPS handler on the Channel. The endpoint, Connection,
+allowed tools, and optional Loop are fixed in configuration; the model cannot change them.
 
 The handler receives idempotency key, Channel identifiers, canonical Session ID/version, tool
 call, and trusted invocation identity. It returns model-visible `result` plus optional

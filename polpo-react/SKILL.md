@@ -1,71 +1,77 @@
 ---
 name: polpo-react
-description: Build React interfaces for Polpo agents with @polpo-ai/react and @polpo-ai/chat. Use for chat components, Sessions, durable reconnect, attachments, ask-user interactions, suggestions, client tool rendering and continuation, agent selection, or Polpo UI theming.
+description: Build React and Next.js interfaces for Polpo agents with `@polpo-ai/react` (`PolpoProvider`, `useChat`, `useSessions`, `useAgents`) and the `@polpo-ai/chat` components. Covers chat screens and support widgets, session lists, streaming and reconnecting, file attachments, ask-user questions, suggestion chips and action buttons, client-side tools rendered in the UI, agent pickers, theming and dark mode, scaffolding with `create-polpo-app` or `polpo create --template`, and keeping the API key out of the browser. Use this whenever someone builds or debugs a front end that talks to a Polpo agent, even if they only say "add a chat to my app" in a project that uses Polpo.
 ---
 
 # Polpo React
 
-Use `@polpo-ai/react` for runtime state and hooks. Use `@polpo-ai/chat` for composable UI.
-Keep application routing and business-side client tool execution in the consuming app.
+`@polpo-ai/react` holds the runtime state and hooks. `@polpo-ai/chat` holds ready-made UI
+components. Your app keeps routing and any business logic a client tool performs.
 
-## Install
+## Start
+
+New app:
 
 ```bash
-npm install @polpo-ai/chat @polpo-ai/sdk @polpo-ai/react \
-  react-virtuoso lucide-react streamdown
+npx create-polpo-app my-chat -t chat -y      # or: polpo create --template chat
 ```
 
-Or add source components with `npx @polpo-ai/ui add`. For a new application use
-`npx create-polpo-app`.
+Existing app:
 
-## Provider
+```bash
+npm install @polpo-ai/react @polpo-ai/sdk @polpo-ai/chat react-virtuoso lucide-react streamdown
+# or copy component source: npx @polpo-ai/ui add
+```
+
+## Provider And The API Key
 
 ```tsx
 import { PolpoProvider } from "@polpo-ai/react";
 
-<PolpoProvider baseUrl={process.env.NEXT_PUBLIC_POLPO_URL!} autoConnect={false}>
+// Requests go to your own proxy route; apiPrefix="/v1" when the proxy forwards to Polpo Cloud
+<PolpoProvider baseUrl="/api/polpo" apiPrefix="/v1" autoConnect={false}>
   {children}
 </PolpoProvider>
 ```
 
-`baseUrl` is the project root; do not append `/v1` or `/api/v1`. Do not expose privileged
-server API keys in browser bundles. Use the application's authenticated backend/proxy when
-credentials must remain server-side.
+`baseUrl` is an origin or your proxy path. Do not append `/v1` or `/api/v1`. The SDK picks the
+prefix from the host name (`/v1` for `*.polpo.sh` and `*.polpo.cloud`, `/api/v1` otherwise), so
+behind a proxy set `apiPrefix` yourself: `/v1` for Cloud, leave it out for a self-hosted runtime.
 
-## Chat Choice
+The project API key gives full access to the project, so it must not reach the browser. Put a
+server route (for example a Next.js route handler at `/api/polpo/[...path]`) in front of Polpo
+that authenticates your user, adds `Authorization: Bearer <POLPO_API_KEY>`, and forwards the
+request; [references/patterns.md](references/patterns.md) has an example. The scaffolded
+templates write `NEXT_PUBLIC_POLPO_API_KEY` to `.env.local` for quick local demos; replace that
+with the proxy before deploying.
 
-Use the high-level component for ordinary chat:
+## Pick The Level
 
-```tsx
-<Chat agent="support" sessionId={sessionId} />
-```
+- `<Chat agent="support" sessionId={sessionId} />` for an ordinary chat screen.
+- `useChat` directly when you need durable delivery, client-side tools, custom question or
+  suggestion rendering, Loop continuation, or your own layout.
 
-Use `useChat` directly when the product needs durable delivery, custom interactions, runtime
-suggestions, explicit client tools, Loop continuation, or its own message composition. A runtime
-SDK update alone does not wire suggestions into the independently released `Chat` adapter/UI.
+## Rules For A Correct Chat UI
 
-## UI Invariants
-
-- Treat Session history from Polpo as canonical; do not duplicate optimistic messages after
-  reconnect or client-tool continuation.
-- Show `reconnecting` separately from `streaming` and do not mark detached durable runs failed.
-- Render a client tool only after validating its name and arguments against the local handler.
-- Continue tool results with a stable idempotency key and current Session version.
-- Suggestions belong to the assistant message that produced them and are actionable only while
-  it remains the latest message.
-- Distinguish message suggestions from application actions before reading `prompt`. Link and
-  postback selection uses application-owned handlers; postbacks never become agent messages.
-- Attachments use typed content parts and authenticated file URL resolution; never place local
-  filesystem paths in browser-visible messages.
+- The Session stored by Polpo is the source of truth. After a reconnect or a tool continuation,
+  show the server's messages; do not also keep optimistic copies, or messages appear twice.
+- Show `reconnecting` differently from `streaming`, and do not mark a detached durable run as
+  failed.
+- Render and run a client tool only if its name is in your local registry and its arguments
+  pass your validation; otherwise show an error.
+- Send tool results with `continueToolResult` and a stable idempotency key.
+- Suggestions belong to the answer that produced them; disable them once a newer message
+  exists. Check `kind` before reading `prompt`: actions (links, postbacks) are handled by your
+  app and never sent as chat messages.
+- Send attachments as typed content parts and show files through an authenticated URL, never a
+  server file path.
 
 ## References
 
-- [references/project-environments.md](references/project-environments.md): provider identity,
-  tab-local selection and late-response isolation; check package/host availability first.
-- [references/runtime-chat.md](references/runtime-chat.md): modern `useChat`, durability,
-  interactions, skills, and continuation.
+- [references/runtime-chat.md](references/runtime-chat.md): `useChat` options, durability,
+  skills, tool continuation, suggestions.
 - [references/components.md](references/components.md): component props.
-- [references/patterns.md](references/patterns.md): current composition patterns.
-- [references/cli.md](references/cli.md): UI scaffolding commands.
-- [references/theming.md](references/theming.md): tokens, dark mode, fonts, and Tailwind.
-- [references/contract-version.md](references/contract-version.md): verified package versions.
+- [references/patterns.md](references/patterns.md): working examples.
+- [references/cli.md](references/cli.md): `create-polpo-app` and `@polpo-ai/ui`.
+- [references/theming.md](references/theming.md): colours, dark mode, fonts, Tailwind.
+- [references/contract-version.md](references/contract-version.md): checked versions.

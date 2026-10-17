@@ -1,69 +1,32 @@
-# Channel Conversation Suggestions
+# Reply Buttons And Lists
 
-Requires the 0.17.2 queue fix on every worker and an upgraded host. Check release tracking before
-using it; installing an SDK alone does not enable a managed Channel.
+Suggestions are short "what to say next" choices the agent offers after an answer. On a Channel
+they appear as native controls: WhatsApp shows one to three reply buttons, or a list for four to
+ten. The agent generates at most five (default three).
 
-## Negotiate and preserve the source
+## Turning Them On
 
-Enable agent `chat.suggestions.enabled`, `ChannelRuntime({ suggestions: true })`,
-and `suggestions` in `createConversationChannelTurnHandler` options. The bridge
-option can be a trusted async resolver of `{ turn, invocation }`, returning the
-existing boolean or request options. It runs again after client tools, so context
-and current hosted policy can change before a Loop continuation. Unsupported or
-disabled hosts omit controls; Channel questions stay disabled.
+1. In the agent, set `chat.suggestions.enabled: true` (see `polpo-agents`).
+2. The host must enable Channel suggestions. On a self-hosted runtime, see
+   [self-hosted-channels.md](self-hosted-channels.md). Every worker must run `0.17.2` or later
+   first.
+3. Channel questions (`ask_user_question`) stay unavailable on Channels.
 
-A custom completion adapter must preserve `polpo.suggestions` and
-`polpo.suggestionsSource.assistantMessageId`, and supply the canonical SessionStore.
-The bridge uses the persisted assistant message as the source. Only message-kind
-suggestions become choices. Application links/postbacks keep their separate
-semantics and must never become model prompts.
+No CLI command or agent-directory setting beyond `chat.suggestions` is needed.
 
-## Deliver and admit a selection
+## What Users See
 
-Let the shared runtime send the main answer before optional controls. WhatsApp
-uses up to three buttons or a list for four to ten choices; generation remains
-maximum five/default three. The adapter bounds and disambiguates labels without
-changing stored prompts. Service-window rules still apply.
+- The main answer is sent first, then the controls in a separate message.
+- Labels may be shortened to fit the provider. The full stored prompt is what the agent
+  receives when the user picks one.
+- A choice is valid once, for 24 hours, and only while that answer is still the latest in the
+  conversation. Stale or repeated taps are ignored rather than starting a new conversation.
+- Application actions (links, postbacks) from web suggestions are not turned into Channel
+  messages.
+- If sending the controls fails, the main answer is still delivered and is not retried.
 
-Use shared atomic state across replicas. The provider sees an opaque random
-reference, not the prompt, Session ID or trusted identity. A single-use set is
-bound to the installation/revision, thread, recipient and source answer, with a
-24-hour TTL. Preserve the provider's verified source message reference: WhatsApp
-`context.id` refers to the controls, while the incoming reply ID does not.
+## Testing
 
-After claiming a callback, the runtime queues a private reference through the
-Chat SDK message path. Dequeue resolves the claimed record and takes a separate
-atomic admission claim. Queue/burst batches keep selections as individual turns
-among ordinary message groups; they never become unverified free-form text.
-Private references are removed before host handlers receive the canonical prompt.
-
-The bridge re-resolves current identity, scope and Session, then checks the exact
-latest canonical source before admitting the original prompt. Keep that private
-selection provenance through the existing queue; never put it in public event
-payloads or logs. A custom handler bypassing the bridge must perform the same
-checks. Do not bootstrap a replacement Session for a stale selection.
-
-After admission, a Loop resume uses normal fresh-grant/run authorization; do not
-reapply the original control's TTL or old assistant-version check to an already
-admitted run. Preserve existing Session/run coordination. Atomic selection claims
-do not create a transaction with arbitrary Session writes or exactly-once tools.
-An uncertain dispatch leaves the selection spent; a fresh user message remains
-possible.
-
-## Failure, rollback and acceptance
-
-Optional resolver/model/projection/delivery failures preserve the main answer.
-A selection that cannot be verified is rejected. Never retry a completed main
-operation merely because sending its controls failed.
-
-Keep the reserved `polpo_suggestion:` callback guard even when disabled. Unknown,
-stale or malformed references cannot fall through to generic application actions.
-A binary downgrade must retain this guard and the internal queued-reference guard
-while earlier controls or queued selections remain. Upgrade all workers before
-enabling the feature so an older worker cannot misinterpret the queue format.
-
-Test signed button/list callbacks, duplicate clicks across two runtimes, stale
-sources after queueing, changed identity/grants, optional delivery failure and
-client-tool-to-Loop continuation. Distinguish intercepted Graph HTTP tests from
-Meta acceptance and actual device rendering; a real roundtrip needs an explicitly
-authorized recipient. No new CLI command or agent-directory action list is needed.
+Test with a real device and an authorised test number: tap a button, tap it again, tap an old
+button after a newer message, and send a normal message instead of tapping. Intercepted HTTP
+tests do not prove that WhatsApp renders the controls.

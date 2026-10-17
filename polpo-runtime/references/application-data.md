@@ -1,7 +1,6 @@
 # Application Data Through The SDK And API
 
-Requires published Polpo OSS `0.15.144` or later. See
-[contract-version.md](contract-version.md) for the verified release contract.
+Requires Polpo `0.15.144` or later.
 Data holds application records independently from Polpo runtime state and file Volumes. A
 logical database has a stable UUID, named tables and `schemaVersion`; the current PostgreSQL
 provider maps it to a schema. Public names are Databases, API `/data` and SDK `.data()`.
@@ -64,8 +63,7 @@ exact request, including after uncertain transport failures. Providers without S
 
 Normal Polpo API keys can create or change databases within their existing organization/project
 scope and bound environment. For account sessions, schema administration requires owner/admin
-membership; ordinary members can read and write records. Programmatic OSS hosts resolve
-administrative `manage` access through the shared Data service.
+membership; ordinary members can read and write records.
 `client.createData({name,schema})` creates one; `database.describe()` yields its current version.
 `database.migrate({expectedVersion,schema})` supports additive schema evolution. For ordered SQL
 DDL and backfills:
@@ -107,8 +105,8 @@ Paths below are relative to `/v1` in Cloud or `/api/v1` on the standard self-hos
 
 Cloud application servers use their normal Polpo API key, never Neon credentials.
 The key has full Data access within its existing organization/project scope, including schema
-administration. Development and Production keys select separate Data
-environments. Agent resource/table grants remain independent.
+administration. Live and Test keys select
+separate Data environments. Agent resource/table grants remain independent.
 Keep credentials server-side. Application user authentication and per-user row rules belong
 to the application; Data does not provide an end-user auth model.
 
@@ -131,8 +129,7 @@ The remote Cloud MCP and builder expose the same 14 account tools:
 - `polpo_databases_backend_get`, `polpo_databases_agent_grants_list`,
   `polpo_databases_agent_grants_set`.
 
-All take `projectId` and optional `environment: "development" | "production"`
-(default `development`).
+All take `projectId` and optional `environment: "live" | "test"` (default `live`).
 Resource operations take `resource` (UUID or logical name). Create, rename, additive
 migrate, transaction, query, mutate and SQL migrate take their canonical API payload
 inside `input`; delete takes `expectedVersion` directly. Grant replacement takes

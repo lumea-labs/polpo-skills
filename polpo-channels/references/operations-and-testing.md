@@ -2,7 +2,7 @@
 
 ## Minimum End-To-End Matrix
 
-Test the real provider flow for each enabled provider:
+Before going live, test the real provider flow for each enabled provider:
 
 1. verification challenge and invalid challenge;
 2. valid and invalid signature;
@@ -15,14 +15,12 @@ Test the real provider flow for each enabled provider:
 9. outbound reply, segmentation, typing failure, provider 4xx/5xx, and retry;
 10. active-run queue or steering across multiple server replicas.
 
-## Observability
+## Debugging
 
-Emit safe provider-neutral events for webhook verification, normalization, dedupe, burst/queue,
-resolver, Session routing, run creation, media fetch/transcription, delivery, and provider error.
-Observability hooks are best-effort and time-bounded; their failure must not fail the turn.
-
-Correlate installation, Channel, Route, provider event, thread, Session, and Run IDs. Redact
-credentials, Bearer tokens, app secrets, media bytes, grants, and private resolver output.
+When a message is not answered, follow it through: provider event received and verified,
+de-duplicated, grouped into a turn, identity resolved, Session chosen, run created, reply
+delivered. Correlate by Channel, Route, provider message ID, Session, and Run IDs, which appear
+in Channel events and run logs (`polpo cloud-logs --follow` in Cloud).
 
 ## Provider Limits
 

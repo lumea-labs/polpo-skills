@@ -31,13 +31,10 @@ The currently pinned Chat SDK adapter may not normalize Meta `statuses` into aut
 delivered/read/failed events. Treat `delivery.completed` as provider acceptance unless the active
 adapter explicitly exposes later receipt states.
 
-## Conversation suggestions
+## Reply Buttons
 
-With the 0.17.2 compatible runtime and explicit host opt-in, use one to three reply
-buttons or a list for four to ten choices; model generation remains capped at five.
-The normal answer precedes the optional controls. Follow [suggestions.md](suggestions.md)
-for source validation and callback handling; do not replace a selected prompt with
-the provider label or treat an application postback as a chat message.
+See [suggestions.md](suggestions.md). WhatsApp shows up to three buttons, or a list for four to
+ten choices.
 
 ## Media
 

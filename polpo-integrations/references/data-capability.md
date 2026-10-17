@@ -1,7 +1,6 @@
 # Application Data In Custom Tools
 
-Requires published Polpo OSS `0.15.144` or later. See
-[contract-version.md](contract-version.md) for the verified release contract.
+Requires Polpo `0.15.144` or later.
 Use `ctx.data` for structured application records when the host has configured Data. It is
 optional and scoped to the current agent, project and environment. A custom tool receives no
 provider credentials and cannot construct new grants from model arguments.
@@ -64,8 +63,7 @@ code; `ctx.data` is not a sandbox for arbitrary code. Managed execution uses iso
 Cloud keeps Neon credentials. Application servers use their normal Polpo API key with
 full Data access inside its existing organization/project scope and bound environment.
 That key's access does not replace or widen an agent's independent database grants.
-Development and Production are separate Data environments; durable tasks and
-schedules stay inside the environment that owns them.
+Live/Test are separate Data environments; durable project tasks and schedules use Live.
 Data itself supplies no application user authentication or per-user row authorization. Resolve
 user identity and application rules in trusted application code; a model-provided user ID is
 not an authorization decision. Do not use project deploy/pull as a database migration or

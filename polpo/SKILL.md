@@ -1,60 +1,125 @@
 ---
 name: polpo
-description: Set up, inspect, link, and deploy Polpo projects using the current .polpo directory layout and CLI. Use for project bootstrap, project files, cloud linking, deployment, database administration through the CLI, or deciding whether behavior belongs to Polpo OSS or Polpo Cloud. For agent design, runtime calls, Channels, integrations, or React UI, use the corresponding specialized Polpo skill.
+description: Set up, configure, validate, and deploy Polpo projects (the open-source AI agent runtime and Polpo Cloud). Use this whenever the repository has a `.polpo/` directory or imports `@polpo-ai/*` packages, or the user mentions Polpo, `polpo create`, `polpo deploy`, `polpo login`, self-hosting Polpo, or asks whether something works in Polpo Cloud versus self-hosted, even if they only say "add an agent" or "ship this". Also covers application databases from the CLI. Start here when unsure which Polpo skill applies; it routes to polpo-agents, polpo-runtime, polpo-channels, polpo-integrations, and polpo-react.
 ---
 
 # Polpo Projects
 
-Treat the checked-out project and the installed CLI as authoritative. Do not recreate legacy
-`.polpo/polpo.json` or `.polpo/agents.json` layouts except when explicitly migrating them.
+Polpo is an agent runtime. A project is a `.polpo/` directory of agents, Loops, skills, tools,
+and schedules, plus a runtime that serves them over an OpenAI-compatible API. The same project
+runs in two places:
 
-## Workflow
+- **Polpo Cloud** (`polpo.sh`): managed runtime, one project per tenant, deployed with the CLI.
+- **Self-hosted**: the open-source runtime (`lumea-labs/polpo`, Apache 2.0) on your own server.
 
-1. Inspect the repository, `.polpo/`, `package.json`, and the installed `polpo` CLI version.
-2. Preserve an existing linked project. Create or link only when the user requests it or no
-   project exists.
-3. Author resources in layout v2: project metadata, one directory per agent, project Loop
-  definitions, teams, skills, runtime hook packs, and the skill lockfile.
-4. Validate locally before deployment. Resolve unknown references and packaging failures rather
-   than relying on a second identical deploy.
-5. Deploy through the CLI or supported workflow. Never place provider secrets in project files.
-6. Report the project, resources changed, validation performed, and whether anything still
-   requires Cloud provisioning or rollout.
+Treat the checked-out project and the installed CLI as the source of truth. When this skill and
+`polpo <command> --help` disagree, the help output wins, because the CLI ships more often than
+this skill.
 
-For application databases, first read [references/databases.md](references/databases.md).
-Apply schema migrations as an explicit administrative step: project deployment and
-pulling resources do not synchronize database schemas, records, migration history or grants.
+## First, Find Out Where You Are
 
-## Project Boundaries
+Before changing anything, run or read:
 
-- OSS owns portable contracts, schemas, runtime behavior, SDKs, CLI behavior, and self-hosted
-  adapters.
-- Cloud owns managed tenancy, billing, rollout, hosted storage, provider automation, secure
-  credential custody, and managed reconciliation.
-- A Cloud feature should consume an OSS primitive when the behavior is generally useful to a
-  self-hosted runtime. Do not model portable runtime behavior as dashboard-only configuration.
+1. `ls .polpo/` and `cat .polpo/project.json`. If `projectId`/`projectSlug` are present, the
+   directory is linked to a Cloud project.
+2. `polpo --version` and `polpo whoami`. If the CLI is missing: `npm i -g @polpo-ai/cli`.
+3. If `.polpo/polpo.json` or `.polpo/agents.json` exist, the project uses the legacy layout. Run
+   `polpo migrate --dry-run` and show the user the result before migrating.
+
+Keep an existing link. Create or link a project only when the user asks for it or no project
+exists yet, because `polpo link` pulls Cloud resources over local `.polpo/` files.
+
+## Cloud Quickstart
+
+```bash
+polpo login                          # browser device-code sign-in
+polpo create --name my-app           # new Cloud project + local .polpo/ scaffold + .env.local
+# or: polpo link --project-id <uuid> # attach this directory to an existing project
+```
+
+Add an agent as a directory (details in `polpo-agents`):
+
+```text
+.polpo/agents/support/agent.json      {"role": "Customer support", "model": "openai/gpt-5"}
+.polpo/agents/support/instructions.md # plain-Markdown system instructions
+```
+
+Then validate, deploy, and call it:
+
+```bash
+polpo loops validate                 # only if .polpo/loops/ exists
+polpo deploy                         # uploads agents, teams, skills, tools, Loops, schedules
+```
+
+```bash
+curl "$POLPO_URL/v1/chat/completions" \
+  -H "Authorization: Bearer $POLPO_API_KEY" -H "Content-Type: application/json" \
+  -d '{"agent":"support","messages":[{"role":"user","content":"Hi"}]}'
+```
+
+`polpo create` writes `POLPO_URL` (`https://<slug>.polpo.cloud`) and a project-scoped
+`POLPO_API_KEY` (`sk_live_...`) to `.env.local`. Web templates (`--template chat`, `chat-widget`,
+`multi-agent`) prefix both with `NEXT_PUBLIC_`, which puts the key in the browser bundle. That is
+acceptable for a local prototype only; before shipping, move the key behind a server route (see
+`polpo-react`).
+
+## Self-Hosted Quickstart
+
+The runtime listens on port `3890`. The REST API is under `/api/v1`; chat completions and durable
+runs are only under `/v1` (`/v1/chat/completions`, `/v1/runs/...`). Set `POLPO_API_KEY`:
+**without it the server accepts unauthenticated requests**, and even with it a few setup routes
+stay open, so keep port 3890 on a private network behind a proxy. Read [references/self-hosting.md](references/self-hosting.md) for the Docker Compose
+stack, environment variables, and which features need extra wiring.
+
+The CLI's project commands (`create`, `link`, `deploy`, `connections`, `channels`, `data`)
+target the Cloud API. On a self-hosted runtime, author `.polpo/` files directly in the runtime's
+`WORK_DIR` and use the HTTP API or SDK instead of `polpo deploy`.
+
+## Working on a Project
+
+1. Edit resources in the layout described in
+   [references/project-layout.md](references/project-layout.md): one directory per agent, Loops
+   in `.polpo/loops/`, skills in `.polpo/skills/`, custom tools in `.polpo/tools/*.ts`, schedules
+   in `.polpo/schedules/*.json`.
+2. Validate before deploying: `polpo loops validate` for Loops; check that every agent's
+   `skills`, `allowedTools`, and `assignedLoops` refer to things that exist. Deploy order already
+   puts tools and skills before the agents that use them.
+3. Never put provider secrets in `.polpo/` files. Use `polpo byok set`, Connections, or the
+   host's environment.
+4. Deploy with `polpo deploy`. A non-zero exit or any "failed" line means the deploy is not done.
+   Fix the reported resource; running the same deploy again is not a fix.
+5. Report back: which project, which resources changed, what you validated, and anything still
+   pending in Cloud (for example a Channel waiting for provider verification).
+
+Database schemas are not part of `polpo deploy`. Apply them as a separate step; see
+[references/databases.md](references/databases.md).
+
+## OSS or Cloud?
+
+Short version: the runtime, contracts, SDKs, and file layout are open source; organizations,
+billing, managed sandboxes, managed OAuth, the MCP server, and the Builder are Cloud-only.
+[references/platform-boundaries.md](references/platform-boundaries.md) has the feature table.
+Read it before promising a self-hosted user a feature, or when something works in Cloud but not
+locally.
 
 ## References
 
-- Read [references/project-environments.md](references/project-environments.md) when selecting
-  Development or Production. Check the installed CLI and managed project rollout state.
-- Read [references/project-layout.md](references/project-layout.md) before creating or migrating
-  `.polpo/` files.
-- Read [references/cli-and-deploy.md](references/cli-and-deploy.md) for bootstrap, linking,
-  validation, deployment, pull, skills, and failure semantics.
-- Read [references/platform-boundaries.md](references/platform-boundaries.md) when deciding OSS
-  versus Cloud ownership or diagnosing managed-only behavior.
-- Read [references/databases.md](references/databases.md) for the Data CLI, database lifecycle,
-  self-hosted configuration and managed boundaries.
-- Read [references/runtime-hooks.md](references/runtime-hooks.md) before adding lifecycle
-  interception, policy checks, audit callbacks, or bounded model/agent verifiers.
-- Read [references/contract-version.md](references/contract-version.md) before relying on exact
-  fields or commands in a different Polpo release.
+- [references/project-layout.md](references/project-layout.md): read before creating or moving
+  files in `.polpo/`.
+- [references/cli-and-deploy.md](references/cli-and-deploy.md): every CLI command group, deploy
+  behaviour, and failure handling.
+- [references/self-hosting.md](references/self-hosting.md): running the OSS runtime.
+- [references/platform-boundaries.md](references/platform-boundaries.md): what each deployment
+  supports.
+- [references/databases.md](references/databases.md): `polpo data` administration.
+- [references/contract-version.md](references/contract-version.md): the version this skill was
+  checked against.
 
 ## Specialized Skills
 
-- `polpo-agents`: agent definitions, models, policies, skills, memory, and sandbox defaults.
-- `polpo-runtime`: completions, Sessions, durable runs, Project Loops, steering, and schedules.
-- `polpo-channels`: messaging providers, provisioning, routing, media, and trusted identity.
-- `polpo-integrations`: Connections, custom tools, hidden bindings, MCP, and OAuth.
-- `polpo-react`: React hooks, chat UI, durable reconnect, interactions, and client tools.
+- `polpo-agents`: agent definitions, models, tool policy, skills, Memory, Knowledge, sandboxes.
+- `polpo-runtime`: calling agents (completions, Sessions, durable runs), Loops, schedules, tasks,
+  application data from the SDK.
+- `polpo-channels`: WhatsApp, Telegram, Slack, and Discord Channels.
+- `polpo-integrations`: Connections, OAuth, MCP servers, custom tools.
+- `polpo-react`: React hooks and chat UI.

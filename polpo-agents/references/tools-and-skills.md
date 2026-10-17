@@ -1,55 +1,60 @@
 # Tools And Skills
 
-## Tool Policy
+## How Tool Permissions Combine
 
-`agent.allowedTools` is the global ceiling. The effective set is the intersection of every
-applicable restriction:
+`agent.allowedTools` is the ceiling. In each run, the tools the model can use are the
+intersection of every restriction that applies:
 
 ```text
-agent ceiling
-intersection current mode (chat, channels, or loop)
-intersection Channel Route when the current turn is a Channel
-intersection Loop and step declarations when executing a Loop
-intersection request execution override
-intersection trusted grants
+agent.allowedTools
+  ∩ surface list (chat.allowedTools, channels.allowedTools, or the Loop step's tools)
+  ∩ Channel Route tools (Channel turns only)
+  ∩ request execution override
+  ∩ trusted grants from the host
 ```
 
-The policy of a preceding chat or Channel turn does not leak into an explicit Project Loop.
-Polpo recalculates Loop policy while preserving the canonical Session and trusted invocation
-context. Route policy remains scoped to the Channel turn unless an explicit contract says
-otherwise.
+So adding a tool to a Route, a Loop step, or a request has no effect unless it is also in
+`allowedTools`. When a user reports "the agent can't see tool X", check each layer in this order.
 
-Client-side OpenAI-compatible tools are also filtered by the current mode policy. They are
-request capabilities, not additions to the agent ceiling.
+A Channel or chat restriction does not carry over into a Project Loop the conversation starts:
+Loop permissions are recalculated from the agent, the Loop, and the step.
+
+Client-side tools sent with a request (OpenAI `tools`) are also filtered by the surface list.
+They are request capabilities and do not add to the agent's ceiling.
 
 ## Tool Loading
 
-- `direct`: expose authorized tool schemas directly.
-- `progressive`: expose discovery and activation capabilities, then load selected schemas.
-- `auto`: let the runtime choose after authorization based on the effective tool set.
+- `direct`: show every authorized tool schema to the model up front.
+- `progressive`: show a discovery tool first and load schemas on demand. Useful for agents with
+  many tools, because it keeps the prompt small.
+- `auto` (recommended): the runtime chooses per run.
 
-Loading mode changes model-visible schemas only. Discovery must never reveal unauthorized tool
-names or descriptions, and activation cannot widen the effective set.
+Loading mode only changes what the model sees. Discovery never reveals tools outside the
+authorized set.
 
-Tools that need filesystem execution declare `requiresSandbox`. This is capability metadata;
-the runtime still enforces sandbox policy and allowed paths.
+Tools that touch the filesystem or shell are marked `requiresSandbox`; they run inside the
+sandbox and inside `allowedPaths`.
 
-## Skills
+## MCP Servers
 
-Agent `skills` contains installed skill names. A skill is a complete binary-safe bundle:
+`mcpServers` attaches MCP servers to an agent. Self-hosted, you can configure stdio, HTTP, or
+SSE servers directly. In Polpo Cloud, connect the server as a Connection, discover its tools,
+and assign them (see `polpo-integrations`). In both cases, never put a token in `agent.json`;
+use a Connection or the host's environment.
 
-```text
-skill-name/
-|-- SKILL.md
-|-- references/
-|-- scripts/
-`-- assets/
+## Runtime Skills
+
+A runtime skill is a folder with `SKILL.md` plus optional `references/`, `scripts/`, and
+`assets/`, stored in `.polpo/skills/<name>/`. Install and assign it with the CLI:
+
+```bash
+polpo skills add owner/repository --skill support-playbook --agent support
 ```
 
-The runtime provides `skill_list` and `skill_read`. `skill_read({ name })` returns the
-entrypoint and textual references; `skill_read({ name, path })` reads one exact bundle-relative
-resource. Do not tell the model to use general workspace `read` for skill internals.
+The agent's `skills` array lists the skills it may use. At runtime the agent gets two tools:
+`skill_list` (a compact index of its skills) and `skill_read`. `skill_read({ name })` returns the
+SKILL.md with its text references; `skill_read({ name, path })` reads one file from the bundle.
+Tell the agent to use `skill_read` for skill files, not general file tools.
 
-Per-request `polpo.skills` activation is additive and ephemeral. It prioritizes assigned skills
-for one execution without removing other assigned skills or changing the agent. Reject a
-requested skill that is not assigned to the effective agent or Loop.
+A single request can prioritise assigned skills with `polpo.skills` (see `polpo-runtime`). It
+adds emphasis for that request only and fails if the skill is not assigned to the agent.

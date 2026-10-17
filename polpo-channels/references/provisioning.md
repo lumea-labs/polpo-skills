@@ -8,7 +8,7 @@ polpo channels list --provider whatsapp
 polpo channels get CHANNEL_ID
 
 polpo channels add whatsapp \
-  --agent leo \
+  --agent support \
   --connection conn_whatsapp \
   --destination PHONE_NUMBER_ID
 
@@ -16,7 +16,7 @@ polpo channels setup-status SETUP_ID
 polpo channels test CHANNEL_ID --to 15551234567
 
 polpo channels routes list CHANNEL_ID
-polpo channels routes add CHANNEL_ID --agent leo --priority 100
+polpo channels routes add CHANNEL_ID --agent support --priority 100
 polpo channels routes remove CHANNEL_ID ROUTE_ID
 polpo channels remove CHANNEL_ID
 ```
@@ -30,7 +30,7 @@ turn. Use identity resolver options when application identity must be resolved b
 
 ```bash
 polpo channels add whatsapp \
-  --agent leo \
+  --agent support \
   --connection conn_whatsapp \
   --destination PHONE_NUMBER_ID \
   --identity-resolver-endpoint https://app.example.com/polpo/channel-identity \

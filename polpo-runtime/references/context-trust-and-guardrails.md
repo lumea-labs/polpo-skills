@@ -1,18 +1,21 @@
 # Context Trust And Guardrails
 
+Both features are project settings in `.polpo/project.json` (or the Cloud project settings).
+A request cannot turn them on, off, or weaker.
+
+```json
+{ "settings": { "contextTrust": "enforce", "guardrails": { "policyPack": "standard" } } }
+```
+
 ## Prompt Context Trust
 
-Keep source and trust metadata attached to retrieved content and tool results until the final
-prompt boundary. Mark external content as data, bound it, escape nested delimiters, and protect
-tool-result messages before they re-enter provider history. Persist the protected representation
-in checkpoints while retaining the original separately for authorized UI/audit use.
-
-`settings.contextTrust: "enforce"` is project/host configuration. Request metadata must not
-enable or weaken it.
+`contextTrust: "enforce"` (default `"off"`) marks retrieved content and tool results as data
+rather than instructions before they reach the model. It reduces prompt injection from web
+pages, documents, and tool output. Turn it on for agents that read untrusted content.
 
 ## Guardrail Packs
 
-Guardrails are disabled when project settings omit them. Current packs are:
+Guardrails are off unless `settings.guardrails` is set. Choose a `policyPack`:
 
 - `standard`: secret redaction, tool argument validation, private-network blocking, and approval
   for destructive operations;
@@ -20,22 +23,18 @@ Guardrails are disabled when project settings omit them. Current packs are:
   enforce-before-delivery;
 - `custom`: standard baseline plus bounded literal content rules.
 
-Apply the ordered engine to input, retrieved context, model preflight, local tool input/output,
-and final output. The tool middleware evaluates actual arguments, invokes the tool at most once,
-bounds the result, and evaluates it before model reinjection.
-
-User-authored regular expressions and private classifier prompts do not belong in serializable
-project settings. Hosts may inject process-local policies and credentials through private
-adapters.
+Guardrails check user input, retrieved context, tool arguments and results, and the final
+answer. Optional limits: `maxInputCharacters`, `maxContextCharacters`, `maxModelInputCharacters`,
+`maxToolOutputCharacters`, `maxFinalOutputCharacters`. `strict` delays streamed text until it has
+been checked, so users see it later.
 
 ## Request Override
 
 A request may ask for stricter enforcement only. It cannot enable an absent project policy,
 weaken the selected pack, replace custom policy, or bypass host hooks.
 
-Provider-executed and client-side tools execute outside local middleware and need equivalent
-provider/client enforcement. Private-network policy must also be enforced at network egress after
-DNS resolution to prevent rebinding.
+Client-side tools and provider-executed tools run outside Polpo, so guardrails cannot check
+them. Apply your own checks in the client tool handler.
 
-Record bounded secret-free decisions in Run trace/audit. Do not persist prompts, raw tool
-arguments/results, schemas, credentials, or private policy text merely to explain a decision.
+Guardrail decisions are recorded in the run trace without prompts, raw tool data, or
+credentials.

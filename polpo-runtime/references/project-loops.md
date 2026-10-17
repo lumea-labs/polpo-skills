@@ -1,7 +1,10 @@
 # Project Loops
 
-Define project-level graphs with `defineProjectLoop` or canonical JSON. Keep Loop logic outside
-the agent definition and authorize it through `assignedLoops`.
+A Project Loop is a fixed workflow: tool steps and agent steps connected by `next`. Use one when
+the order of work must not depend on the model's judgement. Put it in `.polpo/loops/` as
+TypeScript (`defineProjectLoop`) or JSON, and let an agent run it by listing it in the agent's
+`assignedLoops`. Check it with `polpo loops validate` and see the compiled JSON with
+`polpo loops compile .polpo/loops/repair-site.ts`.
 
 ```ts
 import { agentStep, defineProjectLoop, toolStep } from "@polpo-ai/core/loop-code";
@@ -43,17 +46,16 @@ export default defineProjectLoop({
 
 ## Context Bindings
 
-Only an exact `{ "$context": "path" }` object is a binding. Resolve bindings recursively before
-tool or agent schema validation. Never interpolate context into Bash strings.
+An object that is exactly `{ "$context": "path" }` is replaced with the value at that path.
+`saveAs` stores a step's output under a name later steps can read (`validation.failures` above).
+Request data is available under `request.metadata`, filled from the completion's `metadata`.
 
-Seed request-owned data under protected roots such as `request.metadata`. Missing paths, invalid
-types, unsupported schemas, oversize projected input, or mutation of protected roots fail before
-execution. Persist the complete context in checkpoints and resume.
+A missing path, wrong type, or input that fails `inputSchema` stops the Loop before the step
+runs, which is what you want: fix the binding rather than loosening the schema. Do not build
+shell commands by pasting context values into strings; pass them as tool arguments.
 
-An agent step with explicit `input` receives only the validated JSON projection plus its system
-instructions and authorized runtime capabilities. It must not silently recover omitted creative
-history. Trace sanitized binding paths, byte size, hash, and schema result without logging secret
-values.
+An agent step with `input` sees only that input (plus its instructions and tools), not the whole
+conversation. Leave `input` out when the step needs the conversation history.
 
 The example only establishes that each failure is a non-empty object. In a real integration,
 replace `items` with the exact schema produced by the validation tool so malformed diagnostics
@@ -61,9 +63,9 @@ fail before the repair model runs.
 
 ## Policy And Resume
 
-Tool policy is intersected from agent, Loop, step, execution override, and trusted grants.
-Permissions and approvals can pause execution with a durable continuation; resume from the saved
-checkpoint without rerunning completed steps.
+A step's tools are limited by the agent's `allowedTools`, the Loop, the step, the request, and
+trusted grants together. Approvals and permission prompts pause the Loop; when resumed it
+continues from the saved checkpoint without repeating finished steps.
 
 Interactive `ask_user_question` is not a supported Loop-step tool. Perform conversational
 clarification before starting the Loop, then continue into it through the canonical Session.

@@ -1,54 +1,65 @@
 ---
 name: polpo-channels
-description: Build, provision, configure, and debug Polpo messaging Channels for WhatsApp, Telegram, Slack, and Discord. Use for Connection/Channel/Route setup, verified webhooks, media and voice, message bursts, delivery, trusted identity resolution, Channel client tools, session routing, interactive suggestions, proactive sends, or provider-specific behavior.
+description: Put a Polpo agent on WhatsApp, Telegram, Slack, or Discord, and operate those messaging Channels. Covers `polpo channels` provisioning, Connections for provider credentials, Routes from a Channel to an agent, webhook verification, WhatsApp templates and the 24-hour window, media and voice messages, bursts of short messages, mapping a phone number or Slack user to your app's user (identity resolver), Channel tool restrictions, reply buttons and lists, and self-hosting `@polpo-ai/channels`. Use this whenever the user wants an agent reachable from a chat app, asks why messages are not answered or arrive twice, or needs proactive messages, even if they just say "connect the bot to WhatsApp".
 ---
 
 # Polpo Channels
 
-Polpo Channels is a provider-neutral OSS runtime built on official Vercel Chat SDK adapters.
-Keep transport handling separate from agent execution and managed provisioning.
+A Channel connects an agent to a messaging provider. Four resources are involved:
 
-## Resource Model
+- **Connection**: the provider credentials (for WhatsApp: access token, app secret, verify token).
+- **Channel**: one installed destination, such as one WhatsApp phone number or one Slack app.
+- **Route**: which agent answers on that Channel, optionally with fewer tools.
+- **Setup**: a temporary record while the provider confirms the installation.
 
-- A **Connection** stores project-scoped provider authorization and credentials.
-- A **Channel** represents one installed provider destination.
-- A **Route** grants an agent access to that Channel and may narrow tools or destination.
-- A **setup** is temporary authorization or provider-verification state.
+## Choose Your Path
 
-Never mark a Channel active before required provider verification succeeds. Never select
-credentials or routing from an unverified webhook body.
+- **Polpo Cloud**: provision with the CLI or dashboard. Polpo hosts the webhook, verifies
+  signatures, keeps shared state across replicas, and stores credentials. Follow the workflow
+  below and [references/provisioning.md](references/provisioning.md).
+- **Self-hosted**: embed `@polpo-ai/channels` in your runtime and supply credentials, shared
+  state, and webhook routing yourself. Read
+  [references/self-hosted-channels.md](references/self-hosted-channels.md) first.
 
-## Workflow
+## Workflow (Cloud)
 
-1. Inspect provider capabilities and existing Connections, Channels, and Routes.
-2. Provision idempotently through CLI/API/MCP using Connection references, never inline secrets.
-3. Complete callback verification or secure setup and confirm active state.
-4. Configure a trusted identity resolver before Session creation when provider identity must map
-   to application user, tenant, workspace, epoch, or grant.
-5. Configure media, response segmentation, active-run coordination, optional server-side
-   client tools, and opt-in suggestions according to provider capabilities.
-6. Test inbound verification, duplicate delivery, attachment handling, routing, model execution,
-   outbound delivery, and retry behavior end to end.
-7. Treat provider acceptance, delivery, and read receipt as distinct states.
+1. Check what exists: `polpo channels providers`, `polpo channels list`,
+   `polpo connections list`.
+2. Create a Connection holding the provider credentials (never pass secrets as CLI arguments or
+   put them in `.polpo/`).
+3. `polpo channels add <provider> --agent <agent> --connection <connection-id> ...`. Use
+   `--allowed-tool` to give the Channel fewer tools than the agent has.
+4. Finish provider verification. The command prints a callback URL and next action; the Channel
+   becomes active only after the provider confirms it. Check with `polpo channels setup-status`.
+5. If the agent must know who is writing (your app's user, tenant, plan), configure an identity
+   resolver before going live ([references/trusted-identity-and-tools.md](references/trusted-identity-and-tools.md)).
+6. Test with real messages: text, a reply, an image, a voice note, several quick messages, and a
+   duplicate delivery. `polpo channels test <channel-id> --to <recipient>` sends a test message.
 
-## Invariants
+## Things That Surprise People
 
-- Preserve the untouched request for official adapter verification.
-- Resolve an opaque route key to exactly one installation before parsing provider identity.
-- Production state must be shared and atomic across replicas for dedupe, queueing, and locks.
-- The trusted resolver runs before Session, Memory, model, or tool execution and fails closed.
-- Channel and Route tool policies can only narrow agent permissions.
-- Provider events are acknowledged promptly; long execution is coordinated outside webhook life.
-- Media bytes are fetched lazily with scoped credentials and subject to explicit limits.
+- A Channel shows `setup_required` or `pending_external` until the provider verifies it.
+  Updating its status by hand is refused; finish the provider step instead.
+- Provider "accepted" is not "delivered" or "read". Do not report delivery from acceptance.
+- WhatsApp only allows free-form replies within 24 hours of the user's last message. Outside
+  that window use an approved template (`polpo channels send-template`).
+- Channel and Route tool lists can only remove tools the agent already has.
+- If an identity resolver is configured and it fails, times out, or denies, the message is not
+  answered. That is deliberate: no answer is safer than answering as the wrong user.
+- Several short messages in a row are grouped into one turn. Messages that arrive while the agent
+  is still answering are queued or used to steer the run, depending on Channel settings.
 
 ## References
 
-- [references/architecture.md](references/architecture.md)
-- [references/provisioning.md](references/provisioning.md)
-- [references/conversation-and-media.md](references/conversation-and-media.md)
-- [references/trusted-identity-and-tools.md](references/trusted-identity-and-tools.md)
-- [references/whatsapp.md](references/whatsapp.md)
-- [references/suggestions.md](references/suggestions.md) for buttons/lists, source binding,
-  selection admission, and rollback.
-- [references/operations-and-testing.md](references/operations-and-testing.md)
-- [references/contract-version.md](references/contract-version.md)
+- [references/provisioning.md](references/provisioning.md): `polpo channels` commands.
+- [references/whatsapp.md](references/whatsapp.md): WhatsApp Cloud API specifics.
+- [references/conversation-and-media.md](references/conversation-and-media.md): media, voice,
+  bursts, response splitting.
+- [references/trusted-identity-and-tools.md](references/trusted-identity-and-tools.md): identity
+  resolver and server-side Channel tools.
+- [references/suggestions.md](references/suggestions.md): reply buttons and lists.
+- [references/operations-and-testing.md](references/operations-and-testing.md): test checklist
+  and monitoring.
+- [references/self-hosted-channels.md](references/self-hosted-channels.md): running Channels in
+  your own server.
+- [references/contract-version.md](references/contract-version.md): checked version and minimums.

@@ -1,72 +1,84 @@
 # Project Layout
 
-Polpo project layout version 2 uses resource directories rather than aggregate agent files.
+Polpo project layout version 2 stores one file or directory per resource.
 
 ```text
 .polpo/
-|-- project.json
+|-- project.json              # {"schemaVersion": 2, "project": "...", "settings": {...}}
 |-- agents/
 |   `-- support/
-|       |-- agent.json
-|       `-- instructions.md
+|       |-- agent.json        # authored agent configuration
+|       `-- instructions.md   # system instructions (plain Markdown)
 |-- teams/
 |   `-- customer-success.json
 |-- loops/
-|   `-- resolve-ticket.ts
-|-- hooks/
-|   `-- quality.json
+|   `-- resolve-ticket.ts     # or .json
 |-- skills/
-|   `-- support-playbook/
+|   `-- support-playbook/     # complete skill bundle
 |       |-- SKILL.md
 |       `-- references/
-`-- skills.lock.json
+|-- skills.lock.json          # written by `polpo skills`; do not hand-edit
+|-- tools/
+|   `-- lookup-order.ts       # custom tools (defineTool)
+`-- schedules/
+    `-- nightly-report.json
 ```
 
-## Agent Directories
+Other entries you may find: `missions/`, `playbooks/`, `tasks/`, `sessions/`, `avatars/`,
+`vault.enc` (encrypted credentials), `memory.md` and `memory/<agent>.md` (legacy static memory),
+`skills-index.json` (runtime tags and categories for skills), and `.env` (local provider keys,
+never committed).
 
-The directory name is the agent name. `agent.json` contains authored configuration only.
-Do not include `name`, `systemPrompt`, or `createdAt`; they are respectively derived from the
-directory, loaded from `instructions.md`, or assigned by the runtime.
+## project.json
+
+`projectId` and `projectSlug` link the directory to a Cloud project; `polpo create` and
+`polpo link` write them. Runtime behaviour lives under `settings`, for example
+`"storage": "postgres"`, `"guardrails": {"policyPack": "standard"}`, or
+`"contextTrust": "enforce"`.
+
+## Agents
+
+The directory name is the agent name. `instructions.md` becomes the agent's system prompt.
+`agent.json` therefore must not contain `name`, `systemPrompt`, or `createdAt`; the runtime
+derives or assigns them.
 
 ```json
 {
   "role": "Customer support specialist",
-  "model": "openai/gpt-5-mini",
+  "model": "openai/gpt-5",
   "allowedTools": ["http_fetch"],
   "skills": ["support-playbook"]
 }
 ```
 
-`instructions.md` contains the agent instructions as plain Markdown. Keep operational secrets,
-short-lived grants, and tenant identity out of both files.
+Get valid model IDs from `polpo models list`. Keep secrets, short-lived grants, and tenant
+identity out of both files. Field reference: `polpo-agents`.
 
 ## Teams
 
-Each `.polpo/teams/<team>.json` file defines authored team fields. The filename supplies the
-team name and agent membership is derived from each agent's `team` field. Do not add `name` or
-`agents` to the team file.
+`.polpo/teams/<team>.json` holds team metadata. The filename is the team name. Membership comes
+from each agent's `team` field, so do not add `name` or `agents` to the team file.
 
 ## Loops
 
-Project Loops live under `.polpo/loops/` and may be JSON or TypeScript according to the current
-CLI/runtime contract. Agents reference allowed Loop names through `assignedLoops`. Keep Loop
-definitions project-level; do not add new legacy inline `loops` or `pipeline` fields unless
-maintaining an existing project.
+Project Loops live in `.polpo/loops/` as TypeScript (`defineProjectLoop`) or JSON. Agents may run
+only the Loops listed in their `assignedLoops`. Check them with `polpo loops validate`. Do not
+add the legacy inline `loops` or `pipeline` agent fields to new projects.
 
 ## Skills
 
-Skills are complete bundles, not only `SKILL.md`. Preserve `references/`, `scripts/`, `assets/`,
-and binary files. `.polpo/skills.lock.json` records installed sources and revisions; do not hand
-edit it unless repairing a documented migration.
+A skill is a whole directory, not only `SKILL.md`. Keep `references/`, `scripts/`, `assets/`,
+and binary files together. Install with `polpo skills add` so the lockfile records where each
+skill came from.
 
-## Runtime Hooks
+## Custom Tools And Schedules
 
-Runtime hook packs live in `.polpo/hooks/<name>.json`. The filename and pack `name` must match.
-Agents opt into packs through their `hooks` array. Hook configuration is trusted project policy;
-never place credentials in it. Use a Connection for authenticated HTTPS handlers.
+Each `.polpo/tools/*.ts` file exports one `defineTool(...)`; local imports are bundled on deploy
+(see `polpo-integrations`). Each `.polpo/schedules/*.json` file is one schedule; deploy validates
+the referenced agents and Loops before creating anything (see `polpo-runtime`).
 
-## Legacy Migration
+## Legacy Layout
 
-The CLI can recognize old `.polpo/polpo.json` and `.polpo/agents.json` for migration. Treat them
-as input to a migration, not as the target layout. After conversion, validate that agent names,
-instructions, teams, Loop references, skill assignments, and custom tool paths are unchanged.
+Old projects use `.polpo/polpo.json` and `.polpo/agents.json`. Do not create these files. Convert
+with `polpo migrate --dry-run`, review, then `polpo migrate`. Afterwards check that agent names,
+instructions, teams, Loop references, skill assignments, and tool paths are unchanged.

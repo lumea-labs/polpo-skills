@@ -1,80 +1,82 @@
 # CLI And Deploy
 
-Use `polpo --help` and command-specific help as the final authority for the installed version.
+The CLI is `@polpo-ai/cli` (binary `polpo`). Run `polpo <group> --help` before using a flag you
+have not seen in help output for the installed version. Most groups accept `--json`; use it
+when you need to parse the output.
 
-Development/Production targeting is available from `0.17.3`; read
-[project-environments.md](project-environments.md). Do not assume these flags or
-the definitions-only deploy behavior are present in older releases or on a
-managed project that has not entered the environment rollout.
+## Command Map
 
-## Bootstrap
+| Group | Commands | Use for |
+|---|---|---|
+| Account | `login`, `logout`, `whoami`, `orgs list` | Device-code sign-in; stores `~/.polpo/credentials.json` |
+| Project | `create`, `link --project-id <id>`, `projects list\|create`, `cloud-status`, `cloud-logs [--follow]` | Creating, linking, inspecting a Cloud project |
+| Layout | `migrate [--dry-run]` | Converting a legacy `.polpo/` layout |
+| Deploy | `deploy [-y] [-f] [--include-tasks] [--include-sessions] [--all]` | Upload `.polpo/` resources |
+| Loops | `loops validate`, `loops compile [file] [-o out.json]` | Checking Loops locally before deploy |
+| Tools | `tools push <file>`, `tools list`, `tools get <name>`, `tools run <name> --args '{...}'`, `tools rm <name>` | Custom tools (beta) |
+| Skills | `skills list\|add\|assign\|unassign\|update\|remove` | Runtime skills for Polpo agents |
+| Models | `models list [--provider p] [--plain]`, `byok set\|list\|remove <provider>` | Picking model IDs; bring-your-own provider keys |
+| Integrations | `connections ...`, `channels ...` | See `polpo-integrations` and `polpo-channels` |
+| Data | `data list\|describe\|create\|migrate\|query\|...` | See [databases.md](databases.md) |
+| Sandboxes | `volumes list\|get\|create\|update\|remove`, `volumes grants list\|set\|revoke --agent <name>` | Persistent sandbox volumes |
+| Memory | `memory candidates list\|get\|audit\|approve\|reject\|apply --agent <a> --user <id>` | Reviewing automatically learned Memory |
+| Coding agents | `install [--client claude-code,cursor] [--scope global\|project]` | Installing this skill pack (requires sign-in) |
+| CLI | `update [--check]` | Upgrading the CLI |
+
+There is no `init`, `dev`, `serve`, or `pull` command. `polpo link` is the only way to pull Cloud
+resources into `.polpo/`.
+
+## Create And Link
+
+`polpo create` options: `--name`, `--org-id`, `--template empty|chat|chat-widget|multi-agent`,
+`--scenario none|data-analyst|marketing-researcher|product-manager` (seed example agents),
+`--skills global|project|skip` (installs this pack for coding agents), `-y`.
+
+`polpo link --project-id <uuid>` writes the project reference and pulls Cloud resources into
+`.polpo/`. Interactive mode asks about local conflicts; `--yes` overwrites with Cloud state. Ask
+the user to commit or back up local `.polpo/` changes before linking.
+
+## Deploy
+
+`polpo deploy` scans `.polpo/` and deploys in this order: teams, skills, custom tools, Loops,
+agents, legacy memory files, missions, playbooks, schedules, vault, avatars, and then tasks or
+sessions only when `--include-tasks`, `--include-sessions`, or `--all` is passed. `-f` overwrites
+conflicting Cloud resources without asking; use it only when the user wants local files to win.
+
+Before deploying:
+
+1. Run `polpo loops validate` if `.polpo/loops/` exists.
+2. Check that every agent's `skills`, `allowedTools`, `assignedLoops`, and model profile refers
+   to something that exists locally or already in the project.
+3. Make sure no file under `.polpo/` contains a secret.
+
+Read the summary at the end. Any failed resource means the deploy is incomplete, even if the
+others succeeded. Fix the cause and redeploy; an identical second attempt is not a repair.
+
+Deploy does not run database migrations, provision Channels, or create Connections. Those have
+their own commands.
+
+## Runtime Skills
 
 ```bash
-polpo login
-polpo whoami
-polpo create
-polpo link
-```
-
-`create` provisions or links a project and initializes the current `.polpo/` layout. `link`
-associates an existing local repository with an existing project, writes the project reference,
-and pulls the Cloud resources into `.polpo/`. In interactive mode it resolves local conflicts;
-`--yes` uses non-interactive defaults and forces the pull. Inspect or commit valuable local
-`.polpo/` changes before linking.
-
-## Resource Workflow
-
-```bash
-polpo deploy
-polpo cloud-logs
-polpo projects list
-```
-
-`polpo link` performs the supported cloud-to-local resource pull while linking an existing
-project. There is no standalone public `polpo pull` command in this release.
-
-Before deployment:
-
-1. validate JSON and TypeScript resource definitions;
-2. verify every agent, skill, tool, Connection, Hook, and Loop reference;
-3. ensure generated or local-only files are excluded;
-4. preserve the dependency order: tools and skills before Loops or agents that reference them;
-5. require a non-zero exit when any resource fails.
-
-Runtime Hooks are validated and inspected with:
-
-```bash
-polpo hooks validate
-polpo hooks list --local
-polpo hooks list
-```
-
-`polpo deploy` publishes hook packs before agents that reference them.
-
-Do not interpret a partially created resource as a successful deploy. A repeated identical
-deploy may be a useful idempotency test, but it is not a repair strategy.
-
-## Skills
-
-```bash
+polpo skills add owner/repository --skill frontend-design --agent support
+polpo skills add ./my-skill --agent support
 polpo skills list
-polpo skills add owner/repository --skill frontend-design --agent builder
-polpo skills assign frontend-design --agent builder
-polpo skills unassign frontend-design --agent builder
-polpo skills update frontend-design
+polpo skills update --all
+polpo skills unassign frontend-design --agent support
 polpo skills remove frontend-design
 ```
 
-`skills add` installs the complete selected bundle into `.polpo/skills`, updates the lockfile,
-and can assign it to an agent. Deployment must upload the complete relative dependency graph,
-including references, scripts, assets, and binary resources.
+`skills add` copies the whole bundle (SKILL.md, references, scripts, assets) into
+`.polpo/skills/<name>/`, adds the name to the chosen agents' `skills` arrays, and records the
+source in `.polpo/skills.lock.json`. Nothing is uploaded until `polpo deploy` or `--deploy`.
+
+These are skills for Polpo agents. They are separate from this pack, which is installed into
+coding agents with `polpo install`.
 
 ## Failure Handling
 
-- Authentication or membership failures are not project absence. Preserve local files and ask
-  the operator to select the intended organization or project.
-- Unknown tool/skill/Loop references must fail before partial publication where possible.
-- Provider provisioning can legitimately remain pending, but the CLI must surface the provider
-  action and setup URL instead of reporting the resource active.
-- Database reconciliation and package release are separate from project deployment. Run them
-  only when the changed contract requires them.
+- An authentication or membership error does not mean the project is gone. Keep local files and
+  ask the user to check `polpo whoami` and the selected organization.
+- A Channel or Connection can stay pending while the provider waits for the user. Show the setup
+  URL or action the CLI prints instead of reporting it as active.

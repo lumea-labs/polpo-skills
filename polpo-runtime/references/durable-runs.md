@@ -1,6 +1,7 @@
 # Durable Runs And Reconnect
 
-Durable delivery is opt-in for backwards compatibility:
+By default a run stops when the client disconnects. Ask for durable delivery when work is long
+or the client is unreliable (mobile, serverless functions, browser tabs):
 
 ```ts
 const stream = client.chatCompletionsStream({
@@ -10,26 +11,30 @@ const stream = client.chatCompletionsStream({
 });
 ```
 
-The accepted response exposes `x-polpo-run-id`. Persisted SSE frames have monotonic IDs. On a
-transport failure, reconnect to `GET /v1/runs/{runId}/events` after the last complete cursor.
-Never recreate the completion request.
+The response includes the run ID (`stream.runId`, header `x-polpo-run-id`). Every stored event has
+an increasing ID; the SDK keeps the last one in `stream.lastEventId`.
 
-## Client Controls
+## Reconnecting
 
-- `stream.detach()` closes only this subscriber; the durable run continues.
-- `stream.cancel(reason)` requests idempotent server-side cancellation.
-- `stream.abort()` retains the historical cancellation behavior.
-- `stream.resume({ after })` attaches to an existing run after a known cursor.
+On a network error, reattach from the last event you fully processed:
 
-Reject invalid, ahead, malformed, or expired cursors explicitly. A terminal failure is final and
-must not trigger an infinite reconnect loop. Event retention is host-defined; in-memory fallback
-survives a subscriber disconnect but not a process restart.
+```ts
+stream.resume({ after: stream.lastEventId ?? undefined });
+```
 
-## Production Requirements
+Over HTTP: `GET /v1/runs/{runId}/events` with the last event ID. **Never send the original
+completion request again**; that starts a second run and duplicates side effects.
 
-- Persist run status, terminal outcome, cancellation, and replay events atomically enough that a
-  subscriber cannot observe a terminal gap.
-- Separate execution workers from the HTTP/SSE request lifetime.
-- Use bounded reconnect with jitter and surface the terminal reason.
-- Preserve sandbox, Loop checkpoint, steering queue, Session version, trusted context, and
-  idempotency state across resume.
+Reconnect with a capped backoff. If the run has already failed or the cursor is rejected as
+expired or invalid, stop and show the error instead of looping.
+
+## Stopping
+
+- `stream.detach()`: stop listening; the run keeps going.
+- `stream.cancel(reason)`: ask the server to cancel the run. Safe to call twice.
+- `stream.abort()`: older behaviour that also cancels.
+
+## Limits
+
+How long events are kept depends on the host. If the self-hosted runtime has no durable run
+store configured, events survive a dropped connection but not a server restart.

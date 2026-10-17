@@ -1,30 +1,31 @@
 # Packaging And Runtime
 
-Custom tools may import project-local TypeScript modules. Deployment must resolve and upload the
-complete relative dependency graph rather than only the entry file.
+## Multi-File Tools
 
-## Packaging Rules
+A tool in `.polpo/tools/` may import other local TypeScript files. `polpo deploy` and
+`polpo tools push` bundle every file the tool imports, so:
 
-- include reachable local source files with stable POSIX-relative paths;
-- reject imports escaping the tool root;
-- classify package dependencies separately from local files;
-- detect missing files, dynamic unsupported imports, case mismatches, cycles, and oversized
-  bundles before upload;
-- preserve source and bundle metadata independently;
-- build the runtime snapshot with the same `@polpo-ai/tools` contract used by the deployed CLI.
+- keep imported files inside the project and use relative paths; imports that leave the tool's
+  root are rejected;
+- match file-name case exactly (`./Utils` and `./utils` differ on Linux);
+- use static imports; dynamic imports that cannot be resolved ahead of time fail packaging;
+- list npm packages as dependencies instead of importing from a sibling app's `node_modules`.
 
-Do not include dashboard or unrelated Next.js application code in a custom-tool runtime image.
-The runner must resolve its runtime dependencies in the production sandbox, not from a developer
-workspace.
+Packaging errors are reported before anything is uploaded. Fix them there; do not deploy and wait
+for a runtime error to show what was missing.
 
-## Filesystem
+Do not import code from your web app (for example a Next.js page) into a tool. The tool runs in a
+sandbox with only its own bundle and dependencies.
 
-`ctx.workDir` is the authorized writable workspace. Do not create hard-coded home directories or
-assume `/home/daytona` itself is writable. Mounted paths may be mount points: delete their
-contents when resetting a workspace rather than removing the mount root.
+## Files And Workspace
 
-## Runtime Failure Contract
+Write files under `ctx.workDir`, the tool's writable workspace. Do not hard-code home
+directories such as `/home/daytona`. Mounted volumes may be mount points: to reset one, delete
+its contents rather than the mount directory itself.
 
-Return stable errors for package load, schema validation, missing binding, Connection resolution,
-timeout, cancellation, execution, and result serialization. Preserve the internal correlation ID
-and safe diagnostic while redacting source secrets and credentials.
+## Errors
+
+Throw an `Error` with a clear message for expected failures (bad input, upstream 4xx). The
+runtime turns failures into stable errors for package load, schema validation, missing binding,
+Connection resolution, timeout, cancellation, and result serialization, with a correlation ID you
+can quote when debugging. Never include credentials or raw secrets in error messages or results.

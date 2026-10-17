@@ -1,49 +1,70 @@
 # Models And Routing
 
-## Concrete Models And Profiles
+## Pick A Model
 
-Pin one model when behavior should remain deterministic:
-
-```json
-{ "model": "anthropic/claude-sonnet-4-5" }
-```
-
-Reference a project model profile when several agents should share one centrally managed policy:
+Run `polpo models list` (add `--provider anthropic` or `--plain`) and copy an exact ID. IDs use
+`provider/model`:
 
 ```json
-{ "model": { "profile": "coding" } }
+{ "model": "anthropic/claude-sonnet-5" }
 ```
 
-A profile may define a concrete model or a primary plus ordered fallbacks. Profiles are aliases
-for model policy, not user plans or routing rules by themselves. Changing the `coding` profile
-updates every agent that references it.
+Add fallbacks that are tried in order when the primary model fails:
 
-`allowedModelProfiles` narrows the project profiles an agent may use. It must never be used to
-expand the project registry.
+```json
+{ "model": { "primary": "openai/gpt-5", "fallbacks": ["anthropic/claude-sonnet-5"] } }
+```
 
-## Model Routing
+Use `reasoning` (`off` to `xhigh`) for models that support extended thinking. Higher levels are
+slower and cost more.
 
-`modelRouting.mode: "off"` keeps the configured model/profile pinned. `"auto"` opts the agent
-into the project model router. The project router must define:
+## Model Profiles
 
-- bounded `allowedProfiles`;
-- a deterministic `fallbackProfile`;
-- optional ordered rules evaluated before classification;
-- optional profile hints and concise routing guidance;
-- timeout, confidence, and input-size limits.
+A profile is a named model policy that several agents share, so you change one place instead of
+every agent. In Polpo Cloud, profiles live in the project's model settings in the dashboard.
+On a self-hosted runtime, define them in `.polpo/project.json` under `settings.modelProfiles`:
 
-The classifier sees only bounded current-request text, eligible profile names, safe labels, and
-developer-authored hints. It must not receive credentials, full history, prompts, tool schemas,
-or model definitions. An authorized explicit profile override wins and skips automation.
+```json
+{
+  "settings": {
+    "modelProfiles": {
+      "support": "openai/gpt-4o-mini",
+      "support-pro": { "primary": "openai/gpt-5", "fallbacks": ["anthropic/claude-sonnet-5"] }
+    }
+  }
+}
+```
+
+Reference one from an agent with `{ "model": { "profile": "support" } }`. Changing `support`
+changes every agent that references it, so check who uses a profile before editing it.
+
+`allowedModelProfiles` lists the profiles an agent may switch to (for example through a request
+override or the router). It can only narrow the project's profiles, never add new ones.
+
+## Automatic Model Routing
+
+`"modelRouting": { "mode": "auto" }` lets a router choose a profile per request; `"off"` (the
+default) keeps the configured model. In Polpo Cloud the router is configured in the project's
+model settings. The OSS packages contain the router, but the default self-hosted server does not
+read a router configuration, so stay with `off` there unless the host wires it in.
+
+A router configuration needs:
+
+- `allowedProfiles`: the candidates (a subset of the project profiles);
+- `fallbackProfile`: used whenever classification is skipped, slow, or unsure;
+- optional ordered `rules` that match before any classifier runs, and short `profileHints`;
+- optional `minConfidence`, `timeoutMs`, and `maxInputChars`.
+
+The classifier sees only the current request text (bounded), profile names, and your hints, not
+history, tools, or credentials. An explicit, authorized profile override in the request skips
+the router.
 
 ## Execution Routing
 
-Execution routing answers a different question: direct agent turn or Project Loop. It never
-selects a model profile.
+Execution routing answers a different question: should this request be a direct agent turn or
+run one of the agent's Project Loops? It never picks a model.
 
-`executionRouter.mode: "auto"` requires explicit `allowedLoops`; those candidates must also be
-present in `assignedLoops`. Ordered deterministic rules should cover obvious cases before a
-classifier is used. Define a safe direct or Loop fallback at the project/host policy boundary.
-
-Keep model routing and execution routing independently configurable even when both contribute to
-one runtime plan.
+`"executionRouter": { "mode": "auto", "allowedLoops": [...] }` requires every candidate Loop to
+also be in `assignedLoops`. Prefer explicit rules for obvious cases before relying on a
+classifier, and define what happens when nothing matches. Model routing and execution routing
+are configured independently.

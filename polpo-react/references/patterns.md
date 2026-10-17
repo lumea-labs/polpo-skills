@@ -1,5 +1,48 @@
 # React Patterns
 
+## Server Proxy (Next.js)
+
+Keep the API key on the server and check your own user session before forwarding:
+
+```ts
+// app/api/polpo/[...path]/route.ts
+import { auth } from "@/lib/auth"; // your app's session check
+
+async function proxy(req: Request, ctx: { params: Promise<{ path: string[] }> }) {
+  const session = await auth();
+  if (!session) return new Response("Unauthorized", { status: 401 });
+
+  const { path } = await ctx.params;
+  const target = new URL(`/${path.join("/")}${new URL(req.url).search}`, process.env.POLPO_URL);
+  const headers = new Headers({ authorization: `Bearer ${process.env.POLPO_API_KEY}` });
+  for (const name of ["content-type", "accept", "last-event-id", "x-session-id", "idempotency-key", "if-match"]) {
+    const value = req.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  const upstream = await fetch(target, {
+    method: req.method,
+    headers,
+    body: req.method === "GET" || req.method === "HEAD" ? undefined : req.body,
+    // @ts-expect-error Node fetch needs duplex for streamed request bodies
+    duplex: "half",
+  });
+  // fetch already decompressed the body; drop headers that describe the original encoding
+  const responseHeaders = new Headers(upstream.headers);
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("content-length");
+  return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
+}
+
+export { proxy as GET, proxy as POST, proxy as PATCH, proxy as PUT, proxy as DELETE };
+```
+
+Passing the upstream body through keeps SSE streaming intact. Forward `Idempotency-Key` and
+`If-Match`: the SDK relies on them for safe retries and tool continuations. A relative `baseUrl`
+such as `/api/polpo` works only in the browser; server-side code should use an absolute URL or
+call Polpo directly with the key. Pass the signed-in user's ID as
+`user` on chat requests (or `PolpoProvider`'s `user` prop) so Memory and grants are per user.
+Restrict which paths the proxy forwards if browsers should not reach every API route.
+
 ## Durable Conversation
 
 ```tsx

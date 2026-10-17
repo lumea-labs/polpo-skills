@@ -1,9 +1,7 @@
 # Application Databases And The CLI
 
-Requires published Polpo OSS `0.15.144` or later. See
-[contract-version.md](contract-version.md) for the verified release contract.
-The product calls a resource a **database**; API `/data`, SDK `data()` and custom-tool
-`ctx.data` retain the generic Data namespace. Creating a database creates a logical resource
+Requires Polpo `0.15.144` or later. The product calls a resource a **database**; API `/data`,
+SDK `data()` and custom-tool `ctx.data` keep the generic Data name. Creating a database creates a logical resource
 with a stable UUID and its declared tables. The PostgreSQL adapter uses one dedicated schema
 per logical database, rather than provisioning an independent server for every resource.
 
@@ -77,9 +75,8 @@ without it, Data is unavailable. For CLI calls use a server-side `POLPO_API_KEY`
 
 Cloud provisions the managed application database on Neon and keeps provider credentials.
 Applications call Polpo's API using their normal Polpo key with full Data access
-inside its existing organization/project scope. Development and Production keys
-select separate Data environments; the CLI defaults to Development and accepts
-`--prod` or `--env production`. The managed feature must
+inside its existing organization/project scope. Live and Test keys select separate
+Data environments; the CLI does not invent an `--environment` flag. The managed feature must
 also be enabled by the host rollout configuration. Resources sharing a Neon branch share
 compute and backup/restore lifecycle; do not promise independent per-resource restore.
 
@@ -90,11 +87,9 @@ application repository when useful, then apply it through an explicit administra
 
 The self-hosted dashboard exposes **Databases** at `/data`: Schema and table selection, records,
 SQL query/mutation and migrations/history. It uses the configured runtime backend,
-without Cloud environment selection or Neon provisioning controls. OSS agent grants remain
+without Cloud Live/Test or Neon provisioning controls. OSS agent grants remain
 host configuration; the dashboard does not simulate Cloud grant endpoints.
 
-The remote Cloud MCP and builder expose `polpo_databases_*` administration tools
-using the signed-in account, explicit `projectId` and optional `environment`
-(default `development`, or `production`). Use query for SQL reads, mutate for record writes and migrate
-for SQL schema changes. These account tools are distinct from the agent's
-grant-limited `database_*` tools; existing OAuth read/write permissions apply.
+If you have the Polpo Cloud MCP server connected, its `polpo_databases_*` tools do the same
+administration as the signed-in account (pass `projectId`; `environment` defaults to `live`).
+They are separate from the grant-limited `database_*` tools that agents use.

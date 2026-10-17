@@ -1,7 +1,7 @@
 # Connection CLI Workflows
 
-These commands are present in `@polpo-ai/cli` `0.16.1`. Inspect `polpo --version`
-and `polpo connections --help` first. Project commands require an authenticated
+These commands are available in `@polpo-ai/cli` `0.16.1` and later. Check
+`polpo connections --help` for the installed version first. Project commands require an authenticated
 CLI and a linked project. OAuth Client and MCP configuration commands also accept
 `--organization <id>` for an authenticated organization administrator without a
 linked project. The host must expose the corresponding Connect management routes;

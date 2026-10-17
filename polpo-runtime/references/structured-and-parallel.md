@@ -20,12 +20,13 @@ response_format: {
 }
 ```
 
-Validate and sanitize schemas before provider submission. Provider-supported JSON Schema is a
-subset: avoid unsupported remote references and formats such as `format: "uri"` when the selected
-provider rejects them. Return a stable diagnostic naming the incompatible path and keyword.
+Providers support only part of JSON Schema. Avoid `$ref` to remote documents and formats such
+as `format: "uri"` when the model's provider rejects them; the error names the path and keyword
+to change. Use `additionalProperties: false` and list every property in `required` for strict
+mode.
 
-For streaming, buffer until the structured value is complete and schema-valid, then emit one
-canonical JSON content value. Do not expose partial invalid JSON as a successful result.
+When streaming, Polpo buffers structured output and sends one complete, schema-valid JSON value,
+so parse the final content, not partial chunks.
 
 ## Parallel Server Tool Calls
 

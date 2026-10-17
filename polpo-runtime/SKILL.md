@@ -1,58 +1,84 @@
 ---
 name: polpo-runtime
-description: Integrate and operate the Polpo runtime through OpenAI-compatible completions and the Polpo SDK. Use for application Data through the SDK/API, Sessions, durable runs and SSE reconnect, Project Loops, tasks and missions, client-side tools, structured output, parallel tools, chat interactions, runtime hooks, steering, schedules, runtime plans, or execution debugging.
+description: Call and operate Polpo agents from application code with `@polpo-ai/sdk` or the OpenAI-compatible `/v1/chat/completions` API. Covers SDK setup, Sessions and conversation history, streaming and durable runs that survive disconnects, client-side tools and tool-result continuation, ask-user questions, suggestions and action buttons, structured JSON output, steering a running agent, Project Loops (`defineProjectLoop`), schedules, tasks and missions, guardrails, and application databases through `client.data()`. Use this whenever code calls a Polpo agent or a user debugs a Polpo run (lost stream, duplicated messages, tool call errors, a schedule that did not fire), even if they only say "call the agent from my backend". For agent configuration use polpo-agents; for React UI use polpo-react.
 ---
 
 # Polpo Runtime
 
-Keep execution lifetime, canonical conversation state, and the client transport distinct. A
-Session stores conversation history; a Run records one execution; a Project Loop is one possible
-execution mode; SSE is only a delivery transport.
+Polpo serves agents through an OpenAI-compatible Chat Completions API with Polpo extensions under
+a `polpo` field. Four ideas keep integrations correct:
+
+- A **Session** is the conversation history. The server stores it; you pass its ID.
+- A **Run** is one execution, with its own events and final status.
+- A **Project Loop** is a fixed multi-step workflow an agent can run.
+- **SSE** is only how events reach you. Losing the connection does not have to lose the run.
+
+## Connect
+
+```ts
+import { PolpoClient } from "@polpo-ai/sdk";
+
+const client = new PolpoClient({
+  baseUrl: process.env.POLPO_URL!,        // https://<slug>.polpo.cloud or http://localhost:3890
+  apiKey: process.env.POLPO_API_KEY!,     // server-side only
+});
+
+const reply = await client.chatCompletions({
+  agent: "support",
+  messages: [{ role: "user", content: "Where is order 1042?" }],
+  user: currentUser.id,                   // your end user's ID, used for Memory and grants
+});
+```
+
+The SDK adds `/v1` for Polpo Cloud hosts and `/api/v1` for others; pass only the origin. Keep the
+API key on the server. Browsers should go through your backend (see `polpo-react`).
 
 ## Workflow
 
-1. Identify the surface and invocation source: direct chat, Channel, task, schedule, or Loop.
-2. Preserve `x-session-id` when continuity is required. Do not rebuild canonical history from
-   client guesses when a continuation API is available.
-3. Use durable delivery for work that must survive disconnects. Reconnect to the Run event log;
-   never repeat the creation request.
-4. Use direct chat for conversational turns and Project Loops for deterministic multi-step work.
-5. Validate response schemas, tool calls, tool results, and Loop bindings before they reach a
-   provider or persisted history.
-6. Use idempotency keys for continuation, schedule triggers, and externally visible actions.
-7. Inspect terminal events and persisted state, not only the last SSE chunk, before declaring a
-   run successful.
+1. Decide what kind of call this is: one chat turn, a Project Loop (fixed steps), a durable task,
+   or a schedule. See [references/tasks-and-missions.md](references/tasks-and-missions.md).
+2. For multi-turn chat, reuse the Session ID the server returned (`sessionId` in the SDK, header
+   `x-session-id` over HTTP). Send only the new user message; the server rebuilds the history.
+3. If the work is long or the client may disconnect, ask for durable delivery and reconnect to
+   the run's event log on failure. Never send the original request again: that starts a second
+   run.
+4. When the agent calls a client-side tool, run it in your app and send the result with
+   `continueWithToolResult`, using a stable idempotency key.
+5. Use an idempotency key on anything retried: tool continuations, manual schedule triggers,
+   database writes.
+6. Decide success from the final event and the persisted Session or run status, not from the
+   last text chunk.
 
-## Invariants
+## Rules That Prevent Common Bugs
 
-- Every assistant tool call persisted into model history has exactly one valid result before a
-  later model turn. Malformed calls are rejected or repaired at the runtime boundary.
-- Request-scoped client tools are returned to the client and never executed by Polpo.
-- Explicit Project Loop continuation preserves Session, trusted invocation context, and
-  idempotency while recalculating Loop tool policy.
-- `fresh` sandbox isolation means one fresh lease for the outer run, shared by root tools and
-  nested Loop agent steps.
-- Steering is accepted only at safe boundaries and never interrupts a tool midway.
-- Provider errors must become stable Polpo errors with the useful diagnostic preserved.
-- Application Data is independent of Session/runtime storage and file Volumes. Applications
-  use their normal server-side Polpo API key; agent database grants are independent.
-- Runtime Hooks are trusted project policy resolved once per invocation. They may narrow or
-  transform an operation before the normal checks, but cannot grant a denied capability.
+- Do not build the message history yourself for a continuing conversation, and never send a
+  `role: "tool"` message on its own. Use the Session and `continueWithToolResult`.
+- Client-side tools you declare in a request are returned to you and never executed by Polpo.
+  Set `parallel_tool_calls: false` when you send them.
+- An explicit Loop continuation keeps the Session and trusted user context but recalculates tool
+  permissions for the Loop.
+- Steering messages are applied at the next safe point. They never interrupt a running tool.
+- Application databases are separate from Sessions, Memory, and file volumes. Use them through
+  `client.data()` with the server API key; agents get separate, narrower grants.
 
 ## References
 
-- [references/project-environments.md](references/project-environments.md): SDK targeting,
-  key-bound defaults and continuation ownership; check managed project rollout state first.
-- [references/application-data.md](references/application-data.md): typed records, scoped
-  SQL, administrative migrations, HTTP routes and application authentication boundaries.
-- [references/completions-and-sessions.md](references/completions-and-sessions.md)
-- [references/durable-runs.md](references/durable-runs.md)
-- [references/project-loops.md](references/project-loops.md)
-- [references/client-tools-and-interactions.md](references/client-tools-and-interactions.md)
-- [references/structured-and-parallel.md](references/structured-and-parallel.md)
-- [references/steering-and-runtime-plans.md](references/steering-and-runtime-plans.md)
-- [references/context-trust-and-guardrails.md](references/context-trust-and-guardrails.md)
-- [references/runtime-hooks.md](references/runtime-hooks.md)
-- [references/tasks-and-missions.md](references/tasks-and-missions.md)
-- [references/schedules.md](references/schedules.md)
-- [references/contract-version.md](references/contract-version.md)
+- [references/completions-and-sessions.md](references/completions-and-sessions.md): requests,
+  Sessions, streaming, errors.
+- [references/durable-runs.md](references/durable-runs.md): surviving disconnects, cancel.
+- [references/client-tools-and-interactions.md](references/client-tools-and-interactions.md):
+  client tools, ask-user questions, suggestions, action buttons.
+- [references/structured-and-parallel.md](references/structured-and-parallel.md): JSON output and
+  parallel tool calls.
+- [references/project-loops.md](references/project-loops.md): defining and running Loops.
+- [references/steering-and-runtime-plans.md](references/steering-and-runtime-plans.md): steering a
+  run and inspecting runtime decisions.
+- [references/schedules.md](references/schedules.md): cron and one-off schedules.
+- [references/tasks-and-missions.md](references/tasks-and-missions.md): picking the right primitive.
+- [references/context-trust-and-guardrails.md](references/context-trust-and-guardrails.md):
+  guardrail packs and prompt-injection protection.
+- [references/application-data.md](references/application-data.md): `client.data()`, SQL,
+  migrations.
+- [references/custom-hosts.md](references/custom-hosts.md): only for people embedding the runtime
+  in their own server or writing custom stores.
+- [references/contract-version.md](references/contract-version.md): checked version and minimums.

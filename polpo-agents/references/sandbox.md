@@ -1,7 +1,8 @@
 # Sandbox Defaults
 
-An agent may define default `sandbox` policy. A request or task may narrow or override it within
-host authorization.
+Sandboxes are where tools that need a filesystem or shell run. In Polpo Cloud they are managed
+for you. An agent can set default `sandbox` policy, and a request or task can override it within
+what the host allows.
 
 ```json
 {
@@ -35,7 +36,19 @@ host authorization.
 
 ## Volumes
 
-The host defines volume strategy, credentials, and mount path. Agents and requests select only
-granted volume names and may narrow access to `read-only` or manual writeback. They cannot create
-a new grant or change `mounted` versus `hydrated` strategy. A normal local workspace exists even
-when no persistent volume is selected.
+A volume is persistent storage that survives sandboxes. The host (Polpo Cloud) owns its storage,
+credentials, and mount path. An agent's `sandbox.volumes` can only pick volumes the agent has
+been granted and narrow access to `read-only` or manual write-back. Without a volume, the agent
+still has a normal workspace that disappears with the sandbox.
+
+Manage volumes and grants in Cloud with the CLI:
+
+```bash
+polpo volumes create reference --strategy hydrated --access read-only
+polpo volumes grants set reference --agent support --access read-only
+polpo volumes grants list --agent support
+polpo volumes grants revoke reference --agent support
+```
+
+`mounted` volumes are attached directly; `hydrated` volumes are copied in and, for read-write,
+written back automatically or manually (`--write-back auto|manual`).

@@ -1,69 +1,77 @@
 # Schedules
 
-Schedules are durable invocation definitions, not cron strings attached to legacy Missions.
+A schedule runs an agent, a task, a Channel message, or a webhook at a time. Schedules run in
+Polpo Cloud. The stock self-hosted server only has the legacy mission scheduler: creating one of
+these schedules there returns 503 `SCHEDULE_SERVICE_UNAVAILABLE` unless the host wires a schedule
+service and driver. Store each one as a
+JSON file in `.polpo/schedules/`; `polpo deploy` checks every file and the agents and Loops it
+names before creating anything.
 
-Store deployable definitions in `.polpo/schedules/*.json`. `polpo deploy` preflights every file,
-validates referenced local agents and Project Loops, rejects duplicate explicit IDs before the
-first network mutation, and then provisions the schedules. The old `missionId`/`expression`
-shape remains a compatibility input, not the preferred contract.
+```json
+{
+  "id": "nightly-report",
+  "name": "Nightly sales report",
+  "timing": { "kind": "cron", "expression": "0 7 * * 1-5", "timezone": "Europe/Rome" },
+  "invocation": {
+    "surface": "agent",
+    "agentName": "analyst",
+    "input": { "prompt": "Summarise yesterday's sales and post the highlights." },
+    "session": { "mode": "new" },
+    "execution": { "loop": "daily-report" }
+  },
+  "policy": { "catchUp": "skip" }
+}
+```
 
 ## Timing
 
-- `kind: "cron"` defines a recurring schedule with expression and timezone.
-- `kind: "once"` defines one future ISO-8601 instant and optional timezone context.
+- `{ "kind": "cron", "expression": "...", "timezone": "Area/City" }` repeats.
+- `{ "kind": "once", "at": "2026-11-01T09:00:00Z", "timezone": "Area/City" }` runs once.
+
+`policy` can set `catchUp` (`skip` or `latest`), `misfireGraceSeconds`, and `maxConcurrency`.
 
 ## Invocation
 
-The invocation selects one of these runtime surfaces and carries bounded JSON payload. Do not
-encode credentials in the payload.
+| `surface` | Main fields |
+|---|---|
+| `agent` | `agentName`, `input` with `prompt` **or** `messages`, optional `session` (`mode: "new"` or `"reuse"` with `sessionId`, `userId`), optional `execution` (`loop`, `model`, `sandbox`, `guardrails`, `metadata`) |
+| `task` | `agentName`, `title`, `prompt`, optional `userId`, `metadata`, `execution` |
+| `channel` | A proactive send or an agent reply on a Channel and Route |
+| `webhook` | `webhookId`, `payload` |
+| `legacy_mission` | `missionId`; only for old projects |
 
-- `agent`: `agentName`, prompt or messages, optional new/reused Session, and optional execution
-  overrides such as Project Loop, model, sandbox, guardrails, and metadata.
-- `task`: `agentName`, title, prompt, optional external user and execution overrides.
-- `channel`: either a proactive `send` or an `agent_reply`, with Channel/Route/thread identity.
-- `webhook`: a configured `webhookId` and JSON payload.
-- `legacy_mission`: compatibility only.
+To run a Loop on a schedule, set `invocation.execution.loop`. There is no separate Loop surface.
+Never put credentials in the payload.
 
-A Project Loop is selected through `invocation.execution.loop`; it is not a separate schedule
-surface.
+## API And SDK
 
-## Lifecycle
+| HTTP | SDK |
+|---|---|
+| `GET /v1/schedules` / `POST /v1/schedules` | `listSchedules()`, `createScheduleV2()` |
+| `GET\|PATCH\|DELETE /v1/schedules/{id}` | `getSchedule()`, `updateScheduleV2()`, `deleteScheduleV2()` |
+| `POST /v1/schedules/{id}/pause\|resume` | `pauseSchedule()`, `resumeSchedule()` |
+| `GET /v1/schedules/{id}/runs` | `listScheduleRuns()` |
+| `POST /v1/schedules/{id}/runs` with `{ "idempotencyKey": "..." }` | `triggerSchedule()` |
 
-Creation is successful only when the schedule record and driver state make the outcome explicit.
-For managed QStash operation, expect driver `kind: "qstash"` and `status: "registered"` before
-treating provisioning as complete. A failed provider registration must surface its stable error
-and remain reconcilable without creating duplicate delivery.
+`createSchedule()`, `updateSchedule()`, and `deleteSchedule()` without the `V2` suffix are the
+legacy mission helpers; do not use them for new schedules.
 
-Schedule execution creates a durable Schedule Run with an idempotent provider-safe key. The
-worker must create the Session before inserting messages, increment attempts, persist terminal
-status, and retain provider delivery IDs or callback errors.
+When several writers may edit the same schedule, send the current `revision` as `If-Match` on
+update, delete, pause, and resume. In the SDK pass `{ expectedRevision: schedule.revision }` as
+the last argument, for example `pauseSchedule(id, { expectedRevision })`. A stale revision returns a conflict; reload and retry. Reusing
+a manual-trigger idempotency key returns the same run instead of starting another.
 
-Use a caller idempotency key for manual triggers. Reconciliation should retry failed or pending
-driver/run state without duplicating already accepted provider work.
+## Checking A Schedule Really Works
 
-## API And Concurrency
+A successful create only proves the record exists. To prove delivery:
 
-- `GET|POST /v1/schedules` lists or creates schedules.
-- `GET|PATCH|DELETE /v1/schedules/{scheduleId}` reads or mutates one schedule.
-- `POST /v1/schedules/{scheduleId}/pause|resume` changes lifecycle state.
-- `GET /v1/schedules/{scheduleId}/runs` returns durable execution history.
-- `POST /v1/schedules/{scheduleId}/runs` accepts `{ "idempotencyKey": "..." }` and creates one
-  manual run.
+1. Create a `once` schedule a minute or two ahead.
+2. In Polpo Cloud, the schedule should report `driver.kind: "qstash"` and
+   `driver.status: "registered"`. A failed registration shows an error; fix it rather than
+   creating a duplicate.
+3. Watch the run in `listScheduleRuns()` reach a final status, and check the side effect happened
+   exactly once.
+4. Trigger it manually twice with the same idempotency key and confirm you get one run.
+5. Pause or delete test schedules afterwards so they do not fire later.
 
-Use the current `revision` as `If-Match` for update, delete, pause, and resume when concurrent
-writers are possible. A stale revision must return a conflict rather than overwrite a newer
-schedule. Reusing a manual-trigger idempotency key must return the same accepted work, not create
-a second run.
-
-## Production Verification
-
-Test the complete provider path, not only the CRUD response:
-
-1. Create one future `once` schedule and one `cron` schedule.
-2. Require `driver.kind: "qstash"` and `driver.status: "registered"` in managed Cloud.
-3. Observe the due run move through attempts to a terminal state and verify the target side
-   effect or callback exactly once.
-4. Retry the same manual trigger key and confirm run identity is unchanged.
-5. Exercise pause/resume, stale `If-Match`, reconciliation, malformed timezone/timing, and a
-   provider registration failure.
-6. Delete or pause UAT schedules after the test so they cannot fire later.
+Do not attach cron strings to Missions for new work; Mission scheduling is the legacy path.
