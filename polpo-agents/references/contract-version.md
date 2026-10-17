@@ -64,7 +64,8 @@ approval policy. Managed Cloud availability is rollout-dependent.
 
 ## Runtime Steering release contract
 
-Verified on **2026-10-17** against OSS `0.18.9`. Agents and Project Loop agent
+Verified on **2026-10-17** against OSS `0.18.10`. Agents and Project Loop agent
 nodes may declare steering policy. The runtime resolves node/Loop/agent/project/
-platform precedence, and exposes admission separately from eventual delivery.
+platform precedence, exposes admission separately from eventual delivery, and
+atomically seals terminal Loop boundaries before unregistering the active Run.
 Managed Cloud availability remains dependent on the durable host rollout.

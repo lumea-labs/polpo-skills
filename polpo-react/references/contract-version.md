@@ -57,6 +57,6 @@ contracts remain unchanged; managed Cloud availability is rollout-dependent.
 
 ## Runtime Steering release contract
 
-OSS `0.18.9` exposes steering through the SDK and authenticated Runs API. It adds
+OSS `0.18.10` exposes steering through the SDK and authenticated Runs API. It adds
 no React-side execution authority; applications render receipt outcomes and keep
 the server authoritative when a local view of the safe boundary is stale.
