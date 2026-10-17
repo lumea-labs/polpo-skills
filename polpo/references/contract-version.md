@@ -62,8 +62,14 @@ availability or migrate Live/Test state from names alone.
 
 ## Runtime Hooks release contract
 
-Verified on **2026-10-17** against published OSS `0.18.7`. The release includes
+Verified on **2026-10-17** against published OSS `0.18.8`. The release includes
 the versioned hook pack contract, shared chat/Run/Project Loop lifecycle integration,
 command, HTTPS, tool, MCP, prompt and verifier-agent handlers, CRUD API, SDK, CLI,
 deployment ordering and self-hosted documentation. Managed Cloud execution still
 depends on its tenant schema, host adapters and `runtime.hooks.mode` rollout.
+
+## Runtime Steering release contract
+
+OSS `0.18.9` adds `polpo runs steer`, `polpo runs steering get`, and receipt-aware
+SDK/API control. Project targeting and Development/Production resolution use the
+same linked project and environment rules as the other Cloud CLI commands.

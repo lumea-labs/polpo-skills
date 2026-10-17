@@ -72,7 +72,13 @@ availability or migrate Live/Test state from names alone.
 
 ## Runtime Hooks release contract
 
-Verified on **2026-10-17** against published OSS `0.18.7`. Hook tool and MCP
+Verified on **2026-10-17** against published OSS `0.18.8`. Hook tool and MCP
 handlers use ordinary agent authorization and Connection grants. Authenticated
 HTTPS handlers resolve a named Connection host-side; secrets never belong in the
 hook pack or event envelope. Managed Cloud availability is rollout-dependent.
+
+## Runtime Steering release contract
+
+OSS `0.18.9` does not change Connection, MCP, OAuth, or credential-broker contracts.
+Steering content is user input for an active Run and must never carry credentials
+or widen tool and Connection grants.
