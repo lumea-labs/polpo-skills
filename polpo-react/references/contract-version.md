@@ -50,7 +50,13 @@ project; do not infer Cloud availability until that project's migration is compl
 
 ## Runtime Hooks release contract
 
-Verified on **2026-10-17** against published OSS `0.18.7`. Runtime Hooks are
+Verified on **2026-10-17** against published OSS `0.18.8`. Runtime Hooks are
 server-side project policy and do not add a React chat frame or client-side
 execution API in this release. Existing streaming, Session and interaction
 contracts remain unchanged; managed Cloud availability is rollout-dependent.
+
+## Runtime Steering release contract
+
+OSS `0.18.9` exposes steering through the SDK and authenticated Runs API. It adds
+no React-side execution authority; applications render receipt outcomes and keep
+the server authoritative when a local view of the safe boundary is stale.

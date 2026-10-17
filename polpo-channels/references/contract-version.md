@@ -55,7 +55,13 @@ infer Cloud availability until that project's migration is complete.
 
 ## Runtime Hooks release contract
 
-Verified on **2026-10-17** against published OSS `0.18.7`. Channel-originated
+Verified on **2026-10-17** against published OSS `0.18.8`. Channel-originated
 agent turns participate in the same Runtime Hooks lifecycle as direct chat.
 No new Channel configuration field or React transport contract is required;
 managed Cloud availability remains rollout-dependent.
+
+## Runtime Steering release contract
+
+OSS `0.18.9` keeps Channel transport separate from Run steering admission. Channel
+turns may participate in the host's run-scoped steering policy, but this release
+adds no Channel definition field or provider-specific steering UI.

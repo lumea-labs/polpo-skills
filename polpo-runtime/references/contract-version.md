@@ -57,7 +57,7 @@ availability or migrate Live/Test state from names alone.
 
 ## Runtime Hooks release contract
 
-Verified on **2026-10-17** against published OSS `0.18.7`. Runtime Hooks use a
+Verified on **2026-10-17** against published OSS `0.18.8`. Runtime Hooks use a
 versioned, redacted envelope and deterministic decision composition across direct
 chat, Run-backed chat, Channels and Project Loop agent nodes. `tool:before` remains
 before side effects; `turn:stop` permits at most one tool-free feedback recovery.

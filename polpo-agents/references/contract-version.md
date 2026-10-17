@@ -57,7 +57,7 @@ availability or migrate Live/Test state from names alone.
 
 ## Runtime Hooks release contract
 
-Verified on **2026-10-17** against published OSS `0.18.7`. Agents may reference
+Verified on **2026-10-17** against published OSS `0.18.8`. Agents may reference
 trusted packs from `.polpo/hooks` through `hooks: string[]`. Referenced packs must
 exist before deployment and cannot widen model, tool, Connection, entitlement or
 approval policy. Managed Cloud availability is rollout-dependent.
