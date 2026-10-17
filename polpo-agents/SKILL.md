@@ -39,6 +39,8 @@ may narrow it but must never widen it.
   model-visible agent configuration.
 - `hooks` names trusted packs from `.polpo/hooks`; packs cannot widen the agent's tool or model
   policy and must not contain credentials.
+- `steering` defines whether an active agentic scope accepts instructions; node and Loop policy
+  may override it, while request data cannot widen a configured rejection.
 
 ## References
 
