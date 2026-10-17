@@ -19,7 +19,8 @@ execution mode; SSE is only a delivery transport.
 4. Use direct chat for conversational turns and Project Loops for deterministic multi-step work.
 5. Validate response schemas, tool calls, tool results, and Loop bindings before they reach a
    provider or persisted history.
-6. Use idempotency keys for continuation, schedule triggers, and externally visible actions.
+6. Use idempotency keys for continuation, client-tool settlement, schedule triggers, and
+   externally visible actions.
 7. Inspect terminal events and persisted state, not only the last SSE chunk, before declaring a
    run successful.
 
@@ -28,6 +29,8 @@ execution mode; SSE is only a delivery transport.
 - Every assistant tool call persisted into model history has exactly one valid result before a
   later model turn. Malformed calls are rejected or repaired at the runtime boundary.
 - Request-scoped client tools are returned to the client and never executed by Polpo.
+- A pending client tool may be settled without another generation; an accepted continuation is
+  immutable and cannot be replaced by settlement.
 - Explicit Project Loop continuation preserves Session, trusted invocation context, and
   idempotency while recalculating Loop tool policy.
 - `fresh` sandbox isolation means one fresh lease for the outer run, shared by root tools and

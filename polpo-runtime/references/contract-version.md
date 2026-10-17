@@ -73,3 +73,22 @@ tenant/project/environment-scoped storage before acknowledging a message; an
 in-memory OSS registry alone does not provide cross-replica delivery. Terminal
 Project Loop transitions seal the queue atomically so concurrent ingress is
 either durably accepted and settled or reported as too late.
+
+## Client-tool settlement release tracking
+
+Published in the **0.18.16** OSS package set on **2026-10-17** for durable
+client-tool resolution and settlement. It adds read-only inspection and an
+idempotent terminal write that never invokes a model, handler, executor, or
+Project Loop. Public outcomes are `success`, `failed`, and `cancelled`; Session
+history preserves the existing `completed`/`error` state vocabulary and adds
+`settlementOutcome` for exact semantics.
+
+Before using it, verify that the installed core, server, SDK, stores, CLI, and
+serving host contain the settlement contract and that the managed write gate
+is enabled. Package publication alone does not enable a Cloud project; Cloud
+writes default to off and are enabled per project/environment. Existing tenant
+schemas must be migrated before deploying the matching stores, because normal
+history reads also project settlement state. Hosts without the atomic store
+capability must reject writes rather than emulate them with a read-then-update
+sequence. Versioned API contract:
+<https://github.com/lumea-labs/polpo/blob/v0.18.16/docs/client-tool-settlement.md>.
