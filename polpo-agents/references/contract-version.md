@@ -69,3 +69,12 @@ nodes may declare steering policy. The runtime resolves node/Loop/agent/project/
 platform precedence, exposes admission separately from eventual delivery, and
 atomically seals terminal Loop boundaries before unregistering the active Run.
 Managed Cloud availability remains dependent on the durable host rollout.
+
+## Client-tool recovery compatibility
+
+OSS `0.18.16` adds client-tool inspection and settlement through the runtime,
+SDK and CLI without executing the agent again. For recovery, use the
+[settlement contract](../../polpo-runtime/references/client-tools-and-interactions.md)
+and inspect installed host capabilities and Cloud rollout before writing.
+This release adds no new agent, Connection or Channel configuration; the
+feature-specific verification baselines above remain unchanged.

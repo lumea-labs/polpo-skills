@@ -76,7 +76,7 @@ either durably accepted and settled or reported as too late.
 
 ## Client-tool settlement release tracking
 
-Published in the **0.18.16** OSS package set on **2026-10-17** for durable
+Published in the `0.18.16` OSS package set on **2026-10-17** for durable
 client-tool resolution and settlement. It adds read-only inspection and an
 idempotent terminal write that never invokes a model, handler, executor, or
 Project Loop. Public outcomes are `success`, `failed`, and `cancelled`; Session
