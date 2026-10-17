@@ -67,5 +67,9 @@ A step's tools are limited by the agent's `allowedTools`, the Loop, the step, th
 trusted grants together. Approvals and permission prompts pause the Loop; when resumed it
 continues from the saved checkpoint without repeating finished steps.
 
+A Loop and each of its agent nodes can set a `steering` policy, for example `"reject"` on a node
+where new instructions would break the workflow (see
+[steering-and-runtime-plans.md](steering-and-runtime-plans.md)).
+
 Interactive `ask_user_question` is not a supported Loop-step tool. Perform conversational
 clarification before starting the Loop, then continue into it through the canonical Session.

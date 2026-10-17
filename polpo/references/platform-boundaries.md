@@ -11,11 +11,14 @@ locally, or when deciding where new behaviour belongs.
 | Chat completions, Sessions, durable runs, steering | Yes | Yes |
 | Project Loops, tasks, missions, playbooks | Yes | Yes |
 | Runtime skills (`skill_list`/`skill_read`) | Yes | Yes |
+| Runtime hooks (`.polpo/hooks`) | Yes; stock server runs `command` and `http` handlers only | Depends on the project's rollout |
+| Steering with receipts (`polpo runs steer`) | Yes, single process | Yes |
+| Development and Production environments | One server per environment (`POLPO_PROJECT_ENVIRONMENT`) | Projects moved to environments; older projects use Live/Test keys |
 | Custom tools (`defineTool`) | Yes, in the runtime process | Yes, in managed sandboxes |
 | Schedules (`.polpo/schedules`, cron/once) | Not enabled by the stock server (returns 503); a host must wire a schedule service and driver. Legacy mission schedules work. | Yes, delivered by QStash |
 | Typed Memory | Yes | Yes, plus automatic learning |
 | Knowledge (`brain`) | Optional | Yes |
-| Application databases | Yes, with `POLPO_DATA_DATABASE_URL`; grants from `POLPO_DATA_AGENT_GRANTS` | Yes, on Neon; Live/Test; grants in dashboard |
+| Application databases | Yes, with `POLPO_DATA_DATABASE_URL`; grants from `POLPO_DATA_AGENT_GRANTS` | Yes, on Neon, per environment; grants in dashboard |
 | MCP servers on an agent (`mcpServers`: stdio, HTTP, SSE) | Yes | Through Connections |
 | Connections and OAuth | Embed `@polpo-ai/connect*` and pass `connectService`; register your own OAuth apps | Yes, with managed OAuth apps |
 | Channels (WhatsApp, Telegram, Slack, Discord) | Embed `@polpo-ai/channels` and pass `channels` | Yes, managed webhooks |

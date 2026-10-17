@@ -1,9 +1,9 @@
 # Contract Version
 
-verified-against: `0.17.2`
-reviewed: 2026-10-14
+verified-against: `0.18.9`
+reviewed: 2026-10-17
 
-This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `PolpoProvider` props (`baseUrl`, `apiPrefix`, `fetch`, `autoConnect`), `useChat` options and return values (`durable`, `status`, `continueToolResult`, `suggestions`, `detach`, `cancel`), and `polpo create --template`. The separately released `@polpo-ai/chat`, `@polpo-ai/ui`, and `create-polpo-app` packages were not re-checked; their props were last checked against `@polpo-ai/chat` `0.11.1`.
+This skill was first reviewed against the Polpo OSS `0.17.2` source. Checked: `PolpoProvider` props (`baseUrl`, `apiPrefix`, `fetch`, `autoConnect`), `useChat` options and return values (`durable`, `status`, `continueToolResult`, `suggestions`, `detach`, `cancel`), and `polpo create --template`. The separately released `@polpo-ai/chat`, `@polpo-ai/ui`, and `create-polpo-app` packages were not re-checked; their props were last checked against `@polpo-ai/chat` `0.11.1`. Re-checked on 0.18.9: `PolpoProvider` `environment` prop.
 
 ## Minimum Versions
 
@@ -12,6 +12,7 @@ This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `PolpoPr
 | Durable `useChat`, versioned tool continuation | `0.15.109` (earliest checked) |
 | Loop completion suggestions | `0.16.1` |
 | Action suggestions (`ChatSuggestion` union) | `0.17.0` |
+| `PolpoProvider` `environment` | `0.17.3` |
 
 ## If The Installed Version Differs
 

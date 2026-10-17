@@ -3,6 +3,22 @@
 Release notes and verification history for the Polpo skill pack. This file is for maintainers
 of this repository. It is not inside any skill directory, so coding agents do not load it.
 
+## 2026-10-17: Rebase on main and rewrite of #11–#14 content
+
+- Rebased the rewrite on top of #11–#14 and re-checked their topics against OSS `0.18.9`
+  source instead of carrying the release notes over:
+  - Project environments: rewritten as task guidance (`--prod`, keys, what deploy moves,
+    SDK/React/Connect `environment`, self-hosted binding, legacy Live/Test projects).
+  - Runtime Hooks: new authoring reference in `polpo` with the validated pack schema, which
+    events honour decisions, handler fields, and which handlers work on the stock self-hosted
+    server; shorter runtime and integration views.
+  - Steering: receipts, policy precedence, CLI `runs` commands, and limits.
+- Corrected facts found in source: the handler type is `http`, `command` handlers receive the
+  event only through environment variables on the stock Node host, `ask`/`defer` block like
+  `deny`, `turn:stop` data has no answer text, `polpo deploy` no longer uploads memory or vault,
+  and the stock capabilities route lists the whole contract rather than configured adapters.
+- `verified-against` is now `0.18.9`.
+
 ## 2026-10-14: Rewrite for Polpo users
 
 - Rewrote the skills for developers who build on Polpo (Cloud or self-hosted) rather than for

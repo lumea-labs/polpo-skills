@@ -78,6 +78,27 @@
       "prompt": "In my polpo chat UI the assistant reply shows up twice after the user's network drops and comes back.",
       "expected_output": "Identifies duplicated optimistic/client state versus the canonical Session after reconnect; uses durable useChat, treats server history as the source of truth, and does not resend the user message.",
       "files": []
+    },
+    {
+      "id": 12,
+      "skill": "polpo",
+      "prompt": "I want every tool call that deletes something to be checked by our policy service at https://policy.acme.dev before it runs. The service needs our API token. Set it up for the support agent.",
+      "expected_output": "Creates .polpo/hooks/<name>.json (version 1, name = file name) with a tool:before hook, matcher.tools globs for delete tools, an http handler pointing at the HTTPS URL with `connection` (not a token header), onFailure block; adds \"hooks\" to the agent; runs polpo hooks validate and deploy; notes the Connection must exist and that stock self-hosted servers do not support http+connection.",
+      "files": []
+    },
+    {
+      "id": 13,
+      "skill": "polpo",
+      "prompt": "our github action runs `polpo deploy` on merge to main. now we have dev and prod environments, what do I change so prod gets deployed?",
+      "expected_output": "Explains the CLI defaults to Development on every command, so the CI step must add --prod (or --env production) with a Production key; deploy does not move secrets, memory or Connections; never infer target from branch automatically without the flag.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "skill": "polpo-runtime",
+      "prompt": "Users can type while the agent is still working. How do I send their extra message to the running agent and tell them whether it was used?",
+      "expected_output": "Uses steerRun with a unique id and mode steer/follow_up, reads receipt.admission and receipt.delivery, uses getSteeringReceipt later, renders receipt.response for rejected/too_late, and mentions agent/Loop steering policy.",
+      "files": []
     }
   ]
 }

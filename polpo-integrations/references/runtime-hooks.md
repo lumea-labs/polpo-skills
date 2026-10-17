@@ -1,15 +1,20 @@
-# Runtime Hook Integrations
+# Integrations Called From Runtime Hooks
 
-Runtime Hook handlers may call a Polpo tool, an MCP tool, or a public HTTPS endpoint. They do not
-create a privileged integration path. Tool and MCP handlers use the agent's resolved tool palette,
-trusted invocation context, policy, schema validation, and active Connection grants.
+A runtime hook pack (see the `polpo` skill) can call an external service or a tool when an event
+happens. These calls follow the same rules as the agent's own calls; a hook is not a back door.
 
-An authenticated HTTP handler declares `connection` in the hook pack. The host resolves the
-credential immediately before the request and injects the appropriate header. Keep API keys,
-OAuth tokens, authorization headers, signed URLs, and other secrets out of hook JSON, prompts,
-event envelopes, results, and traces.
+| Handler | How it reaches the service |
+|---|---|
+| `http` | POSTs the redacted event to a public HTTPS URL. For authentication, set `"connection": "<connection name>"`; the host adds the credential just before the request. |
+| `tool` | Calls a Polpo tool, which must be in the agent's allowed tools, with the agent's grants. |
+| `mcp_tool` | `connection` is the MCP server name and `tool` the raw tool name; Polpo calls `mcp__<server>__<tool>` and never falls back to a custom tool with the same name. |
 
-Use `mcp_tool` with the configured MCP server name and raw tool name. The runtime maps it to the
-canonical `mcp__<server>__<tool>` capability and never falls back to a custom tool with the same
-raw name. Revocation or an insufficient grant must fail like the corresponding ordinary tool
-call.
+- Never put API keys, tokens, `Authorization` headers, or signed URLs in hook JSON. The validator
+  rejects header and environment names that look like secrets.
+- A revoked Connection or missing grant makes the hook fail exactly like the tool call would.
+  With `onFailure: "continue"` (the default) that means the event is allowed; use `"block"` when
+  the check must succeed.
+- Your HTTP endpoint receives `x-polpo-hook-idempotency-key`. Use it to ignore repeats, because a
+  resumed run can send the same event again.
+- On the stock self-hosted server only `http` without `connection` (and `command`) works; the
+  others need host adapters.

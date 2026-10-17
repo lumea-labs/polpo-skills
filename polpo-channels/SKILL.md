@@ -24,7 +24,8 @@ A Channel connects an agent to a messaging provider. Four resources are involved
 ## Workflow (Cloud)
 
 1. Check what exists: `polpo channels providers`, `polpo channels list`,
-   `polpo connections list`.
+   `polpo connections list`. These target Development; Channels and their Connections belong to
+   one environment, so provision Production separately with `--prod`.
 2. Create a Connection holding the provider credentials (never pass secrets as CLI arguments or
    put them in `.polpo/`).
 3. `polpo channels add <provider> --agent <agent> --connection <connection-id> ...`. Use
@@ -44,6 +45,8 @@ A Channel connects an agent to a messaging provider. Four resources are involved
 - WhatsApp only allows free-form replies within 24 hours of the user's last message. Outside
   that window use an approved template (`polpo channels send-template`).
 - Channel and Route tool lists can only remove tools the agent already has.
+- The agent's runtime hook packs also run on Channel turns, so a hook can block or rewrite a
+  Channel reply the same way it does in web chat.
 - If an identity resolver is configured and it fails, times out, or denies, the message is not
   answered. That is deliberate: no answer is safer than answering as the wrong user.
 - Several short messages in a row are grouped into one turn. Messages that arrive while the agent

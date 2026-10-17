@@ -47,6 +47,8 @@ A model that can pick an account ID or pass a token can be talked into using the
   and the tool never sees it. Use `legacy_credentials` slots only when a library needs the raw
   token; in Cloud that also needs explicit operator consent per slot.
 - A tool cannot gain scopes, filesystem access, or accounts beyond what it was granted.
+- Connections and grants exist per environment. Set them up in Production separately
+  (`--prod`).
 - `ctx.data` gives tools record access within the agent's database grants; it never exposes
   database credentials or schema changes.
 - Find missing files or dependencies before deploying. A 502 at runtime is the wrong place to
@@ -66,4 +68,8 @@ A model that can pick an account ID or pass a token can be talked into using the
 - [references/data-capability.md](references/data-capability.md): `ctx.data`.
 - [references/packaging-and-runtime.md](references/packaging-and-runtime.md): multi-file tools,
   workspace paths, error handling.
+- [references/project-environments.md](references/project-environments.md): Connections and
+  grants in Development and Production.
+- [references/runtime-hooks.md](references/runtime-hooks.md): calling services and tools from
+  runtime hook packs.
 - [references/contract-version.md](references/contract-version.md): checked version and minimums.

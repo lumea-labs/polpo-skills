@@ -1,9 +1,9 @@
 # Contract Version
 
-verified-against: `0.17.2`
-reviewed: 2026-10-14
+verified-against: `0.18.9`
+reviewed: 2026-10-17
 
-This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `AgentConfig` fields (`model`, `allowedTools`, `toolLoading`, `skills`, `assignedLoops`, `mcpServers`, `chat`, `sandbox`, routers), runtime skill tools, the nine `database_*` tools, Memory and Knowledge routes, and the `volumes` and `memory candidates` CLI groups.
+This skill was first reviewed against the Polpo OSS `0.17.2` source. Checked: `AgentConfig` fields (`model`, `allowedTools`, `toolLoading`, `skills`, `assignedLoops`, `mcpServers`, `chat`, `sandbox`, routers), runtime skill tools, the nine `database_*` tools, Memory and Knowledge routes, and the `volumes` and `memory candidates` CLI groups. Re-checked on 0.18.9: `hooks` and `steering` agent fields and the steering policy schema.
 
 ## Minimum Versions
 
@@ -12,6 +12,8 @@ This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `AgentCo
 | Application database tools and grants | `0.15.144` |
 | Loop completion suggestions, up to five items | `0.16.1` |
 | Action suggestions (links, postbacks) | `0.17.0` |
+| `hooks` field | `0.18.8` |
+| `steering` policy | `0.18.9` |
 
 ## If The Installed Version Differs
 

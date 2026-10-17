@@ -48,7 +48,8 @@ Then validate, deploy, and call it:
 
 ```bash
 polpo loops validate                 # only if .polpo/loops/ exists
-polpo deploy                         # uploads agents, teams, skills, tools, Loops, schedules
+polpo hooks validate                 # only if .polpo/hooks/ exists
+polpo deploy                         # Development; add --prod for Production
 ```
 
 ```bash
@@ -62,6 +63,15 @@ curl "$POLPO_URL/v1/chat/completions" \
 `multi-agent`) prefix both with `NEXT_PUBLIC_`, which puts the key in the browser bundle. That is
 acceptable for a local prototype only; before shipping, move the key behind a server route (see
 `polpo-react`).
+
+## Development And Production
+
+Cloud projects can have a Development and a Production environment with separate state and
+credentials. Every CLI project command targets Development unless you pass `--prod` (or
+`--env production`), on every command. Never switch to Production on your own initiative or
+retry there after a Development failure. Read
+[references/project-environments.md](references/project-environments.md) before deploying to
+Production, wiring CI, or when a key is reported as `legacy` or `mixed`.
 
 ## Self-Hosted Quickstart
 
@@ -79,11 +89,11 @@ target the Cloud API. On a self-hosted runtime, author `.polpo/` files directly 
 
 1. Edit resources in the layout described in
    [references/project-layout.md](references/project-layout.md): one directory per agent, Loops
-   in `.polpo/loops/`, skills in `.polpo/skills/`, custom tools in `.polpo/tools/*.ts`, schedules
-   in `.polpo/schedules/*.json`.
-2. Validate before deploying: `polpo loops validate` for Loops; check that every agent's
-   `skills`, `allowedTools`, and `assignedLoops` refer to things that exist. Deploy order already
-   puts tools and skills before the agents that use them.
+   in `.polpo/loops/`, skills in `.polpo/skills/`, hook packs in `.polpo/hooks/`, custom tools in
+   `.polpo/tools/*.ts`, schedules in `.polpo/schedules/*.json`.
+2. Validate before deploying: `polpo loops validate` and `polpo hooks validate`; check that every
+   agent's `skills`, `hooks`, `allowedTools`, and `assignedLoops` refer to things that exist.
+   Deploy order already puts skills, hooks, and tools before the agents that use them.
 3. Never put provider secrets in `.polpo/` files. Use `polpo byok set`, Connections, or the
    host's environment.
 4. Deploy with `polpo deploy`. A non-zero exit or any "failed" line means the deploy is not done.
@@ -108,6 +118,10 @@ locally.
   files in `.polpo/`.
 - [references/cli-and-deploy.md](references/cli-and-deploy.md): every CLI command group, deploy
   behaviour, and failure handling.
+- [references/project-environments.md](references/project-environments.md): Development and
+  Production, `--prod`, keys, legacy Live/Test projects.
+- [references/runtime-hooks.md](references/runtime-hooks.md): hook packs in `.polpo/hooks/`
+  (audit, tool policy, final checks).
 - [references/self-hosting.md](references/self-hosting.md): running the OSS runtime.
 - [references/platform-boundaries.md](references/platform-boundaries.md): what each deployment
   supports.

@@ -1,17 +1,18 @@
-# Runtime Hooks
+# Runtime Hooks At Runtime
 
-The runtime emits stable lifecycle events across direct chat, Run-backed chat, Channels, and
-agent nodes in Project Loops. The v1 contract includes session, input, turn, model, tool,
-approval, agent, compaction, model-switch, Loop, sandbox, and Run events.
+Hook packs are configured on the agent (see the `polpo` skill's runtime-hooks reference for
+authoring). This page explains what an application calling the agent will see.
 
-Every handler receives a versioned, redacted envelope, stable identity, and idempotency key.
-Payloads, timeouts, recursion, prompt evaluations, and verifier-agent turns are bounded. Hook
-failures follow explicit `onFailure: continue|block` policy.
+- Hooks run on direct chat, Run-backed chat, Channel turns, and agent nodes in Project Loops.
+  The set of packs is fixed when the run starts; a deploy during the run does not change it.
+- A blocked tool call (`tool:before` deny) does not fail the run. The model receives an error
+  result such as `Error: Runtime hook deny: <reason>` and continues.
+- A block on `input:before`, `model:*`, `agent:spawn`, or `sandbox:start` fails the turn with an
+  error. A block on a Loop event stops the Loop.
+- A `turn:stop` hook can ask for one revision: the agent gets one extra model call without tools
+  and the answer you receive is the revised one. Expect slightly longer latency on those turns.
+  Structured-output requests skip this step.
+- `ask` and `defer` currently block like `deny`; they do not create an approval you can answer.
 
-For `tool:before`, `modify.data.input` becomes the candidate input before the ordinary middleware,
-authorization, and schema validation. For `tool:after`, `modify.data.result` replaces only the
-normalized model-visible result. Hooks cannot widen static tool policy or bypass approval.
-
-Use `turn:stop` for a final bounded quality check. A feedback response triggers exactly one
-tool-free recovery model step; the runtime checks the result again and then terminates. Never
-build open-ended agent control flow with this event; use a Project Loop for that.
+When a user reports "the agent refused" or "the tool always errors", check the agent's `hooks`
+and the hook trace (`runtime:hook` events) before changing prompts or tools.

@@ -1,6 +1,6 @@
 ---
 name: polpo-react
-description: Build React and Next.js interfaces for Polpo agents with `@polpo-ai/react` (`PolpoProvider`, `useChat`, `useSessions`, `useAgents`) and the `@polpo-ai/chat` components. Covers chat screens and support widgets, session lists, streaming and reconnecting, file attachments, ask-user questions, suggestion chips and action buttons, client-side tools rendered in the UI, agent pickers, theming and dark mode, scaffolding with `create-polpo-app` or `polpo create --template`, and keeping the API key out of the browser. Use this whenever someone builds or debugs a front end that talks to a Polpo agent, even if they only say "add a chat to my app" in a project that uses Polpo.
+description: Build React and Next.js interfaces for Polpo agents with `@polpo-ai/react` (`PolpoProvider`, `useChat`, `useSessions`, `useAgents`) and the `@polpo-ai/chat` components. Covers chat screens and support widgets, session lists, streaming and reconnecting, file attachments, ask-user questions, suggestion chips and action buttons, client-side tools rendered in the UI, agent pickers, Development/Production switching, theming and dark mode, scaffolding with `create-polpo-app` or `polpo create --template`, and keeping the API key out of the browser. Use this whenever someone builds or debugs a front end that talks to a Polpo agent, even if they only say "add a chat to my app" in a project that uses Polpo.
 ---
 
 # Polpo React
@@ -74,4 +74,6 @@ with the proxy before deploying.
 - [references/patterns.md](references/patterns.md): working examples.
 - [references/cli.md](references/cli.md): `create-polpo-app` and `@polpo-ai/ui`.
 - [references/theming.md](references/theming.md): colours, dark mode, fonts, Tailwind.
+- [references/project-environments.md](references/project-environments.md): `environment` prop
+  and switching between Development and Production.
 - [references/contract-version.md](references/contract-version.md): checked versions.

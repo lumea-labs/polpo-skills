@@ -1,9 +1,9 @@
 # Contract Version
 
-verified-against: `0.17.2`
-reviewed: 2026-10-14
+verified-against: `0.18.9`
+reviewed: 2026-10-17
 
-This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `defineTool` fields (`timeoutMs`, `connections`, `bindingsSchema`, `serverBindings`), the `polpo connections` and `polpo tools` CLI commands, `ctx.data`, and the self-hosted `connectService` option.
+This skill was first reviewed against the Polpo OSS `0.17.2` source. Checked: `defineTool` fields (`timeoutMs`, `connections`, `bindingsSchema`, `serverBindings`), the `polpo connections` and `polpo tools` CLI commands, `ctx.data`, and the self-hosted `connectService` option. Re-checked on 0.18.9: `PolpoConnectClient` `environment` and hook handler validation.
 
 ## Minimum Versions
 
@@ -11,6 +11,8 @@ This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `defineT
 |---|---|
 | `ctx.data` in custom tools | `0.15.144` |
 | Connector protocol/authentication model, customer OAuth clients, MCP OAuth configurations, gateway and direct slots | `0.16.0` |
+| `PolpoConnectClient` `environment` | `0.17.3` |
+| Hook `http`/`tool`/`mcp_tool` handlers | `0.18.8` |
 
 ## If The Installed Version Differs
 

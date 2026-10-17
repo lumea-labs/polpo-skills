@@ -22,6 +22,10 @@ Loop permissions are recalculated from the agent, the Loop, and the step.
 Client-side tools sent with a request (OpenAI `tools`) are also filtered by the surface list.
 They are request capabilities and do not add to the agent's ceiling.
 
+Runtime hook packs listed in the agent's `hooks` can block or rewrite a tool call before it runs
+(`tool:before`). If a tool "always errors" with `Runtime hook deny`, look at the hook packs, not
+the tool.
+
 ## Tool Loading
 
 - `direct`: show every authorized tool schema to the model up front.

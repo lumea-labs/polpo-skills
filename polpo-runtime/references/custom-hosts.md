@@ -17,8 +17,18 @@ server do not need any of this; the runtime already does it.
 
 ## Steering
 
-Persist the steering queue with run checkpoints, and close it atomically when the run finishes so
-that an accepted message cannot be silently dropped.
+Persist each steering message and its first receipt before acknowledging it. Keep the queue in
+run checkpoints and close it atomically when the run finishes, so an accepted message cannot be
+silently dropped. The built-in registry is single-process; a distributed host needs durable
+steering and receipt storage scoped by tenant, project, environment, and run, with final
+receipts still readable after the run's owner exits.
+
+## Runtime Hooks
+
+Embed the server with a `runtimeHookHost` to support `tool`, `mcp_tool`, `prompt`, `agent`, and
+Connection-authenticated `http` handlers (`resolveHttpHeaders`). For durable replay, provide
+`findCompleted` so a resumed run reuses stored hook decisions instead of re-running handlers.
+Return real handler support from the capabilities route instead of the portable default.
 
 ## Schedules
 

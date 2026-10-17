@@ -1,20 +1,23 @@
-# Connection environment ownership
+# Connections In Development And Production
 
-Published in OSS `0.17.3` and reconciled on 2026-10-15 against the deployed Cloud
-canary. Managed routing, OAuth callback binding and isolated credentials require
-the selected project to have completed the Cloud environment migration.
+On a Cloud project with environments, Connections, OAuth accounts, credentials, and agent grants
+belong to one environment. A new Production environment starts without Development's accounts
+or grants; connect and grant them again there. Catalog entries and a managed OAuth app can be
+shared, but an authorized account is not.
 
-`PolpoConnectClient` accepts an optional immutable `environment` with the values
-`development` or `production`. It applies to API, MCP, OAuth, setup and gateway
-calls. Omission follows the key/bound endpoint; an unavailable target never falls
-back. Organization OAuth app configuration uses a client without an environment.
+- CLI: `polpo connections ...` targets Development; add `--prod` for Production. Organization
+  OAuth app commands (`connections oauth-clients ...` with `--organization`) are not per
+  environment and reject the flag.
+- SDK: `new PolpoConnectClient({ ..., environment: "production" })`. The option applies to API,
+  MCP, OAuth, setup, and gateway calls and cannot be changed later. Without it, the key and URL
+  decide. An organization-level client must not set an environment.
+- Grants are per agent per environment; giving `support` access in Development does not give the
+  Production `support` agent anything.
+- Your app's end-user subject and tenant are unrelated to the environment. Keep passing them as
+  before.
 
-The intended managed model starts Development without Production's Connections,
-secrets or grants. Catalog entries and a managed OAuth application can be shared,
-but that is not a shared account authorization. Agent names alone do not transfer
-grants. Application subject/tenant scope remains independent of the environment.
+An OAuth flow finishes in the environment where it started, even if the user switches
+environment in your UI before the callback. Start setup sessions from a backend client created
+for the intended environment, and do not derive the environment from a return URL.
 
-OAuth state/setup must retain the original environment through callback, even if
-the browser changes its selection. Do not reconstruct the destination from a
-return URL or current UI state. Keep callback routing and credential rotation in
-the host; selecting an SDK URL does not implement those security guarantees.
+Requires Polpo `0.17.3` or later and a Cloud project moved to environments.

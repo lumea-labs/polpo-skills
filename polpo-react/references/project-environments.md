@@ -1,16 +1,26 @@
-# Environment-aware providers
+# Development And Production In React
 
-Published in OSS `0.17.3` and reconciled on 2026-10-15 against the deployed Cloud
-canary. Managed UI and runtime provisioning remain rollout-gated per project.
+Requires `@polpo-ai/react` `0.17.3` or later and a host with environments.
 
-On a supporting host, pass `environment="development"` or `"production"` to
-`PolpoProvider`. Omission follows the authenticated key/endpoint; no SDK default
-selects Development. The provider recreates client, store and event stream and
-remounts children when environment, base URL, key, API prefix or fetch identity
-changes. Keep custom fetch references stable across ordinary renders.
+```tsx
+<PolpoProvider baseUrl="/api/polpo" apiPrefix="/v1" environment="production">
+  {children}
+</PolpoProvider>
+```
 
-Keep the dashboard target in the route/tab, not a global cookie that changes
-another tab's destination. Reset the selected session, pending modal and local
-draft on target changes. Do not let a late response populate the new view or
-continue an old run using the new client. Independent providers may target the
-two environments simultaneously. Never expose privileged keys in a browser.
+- Without `environment`, the provider uses whatever the key and URL point to; it does not
+  default to Development.
+- Changing `environment`, `baseUrl`, `apiKey`, `apiPrefix`, or `fetch` rebuilds the client and
+  store and remounts the children. Keep a custom `fetch` stable (define it outside the component
+  or memoize it) so ordinary renders do not reset the chat.
+- Two providers can target the two environments at the same time.
+
+If your app lets people switch environment:
+
+- keep the choice in the URL or tab state, not a global cookie that would redirect another tab;
+- on a switch, clear the selected Session, open dialogs, and unsent drafts;
+- ignore late responses from the old environment, and never continue an old run (tool result,
+  steering, cancel) through the new provider.
+
+With the server proxy pattern, the proxy holds one key per environment and must forward to the
+matching one; never expose either key to the browser.

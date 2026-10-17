@@ -20,6 +20,8 @@ The directory gives the agent its `name`, and `instructions.md` becomes its syst
   "allowedTools": ["http_fetch", "search_*"],
   "toolLoading": { "mode": "auto" },
   "skills": ["support-playbook"],
+  "hooks": ["guardrails"],
+  "steering": { "acceptance": "best_effort" },
   "assignedLoops": ["resolve-ticket"],
   "maxTurns": 40,
   "chat": {
@@ -45,6 +47,8 @@ The directory gives the agent its `name`, and `instructions.md` becomes its syst
 | `chat` | `allowedTools` for direct chat, `allowUserQuestions` (default true), `suggestions`. |
 | `channels.allowedTools` | Narrower tool set for messaging Channel turns. |
 | `skills`, `mcpServers` | Installed runtime skills and MCP server configurations. |
+| `hooks` | Runtime hook pack names from `.polpo/hooks/` (audit, tool policy, final checks). Each pack once. |
+| `steering` | Whether messages sent to a running agent are taken: `acceptance` `best_effort` (default), `accept`, or `reject`, plus optional localized `outcomes`. |
 | `assignedLoops`, `executionRouter` | Project Loops the agent may run, and whether a router picks direct or Loop execution. |
 | `allowedPaths` | Directories file tools and `bash` may use (absolute or relative to the work dir). Default: the work dir. |
 | `sandbox` | Default sandbox isolation, lifecycle, and volumes. See [sandbox.md](sandbox.md). |

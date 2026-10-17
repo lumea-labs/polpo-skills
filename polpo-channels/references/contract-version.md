@@ -1,9 +1,9 @@
 # Contract Version
 
-verified-against: `0.17.2`
-reviewed: 2026-10-14
+verified-against: `0.18.9`
+reviewed: 2026-10-17
 
-This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `@polpo-ai/channels` exports (`ChannelRuntime`, management service, WhatsApp suggestion adapter), the `polpo channels` CLI commands, and the self-hosted `channels` server option.
+This skill was first reviewed against the Polpo OSS `0.17.2` source. Checked: `@polpo-ai/channels` exports (`ChannelRuntime`, management service, WhatsApp suggestion adapter), the `polpo channels` CLI commands, and the self-hosted `channels` server option. Re-checked on 0.18.9: Channel turns use the agent's runtime hooks.
 
 ## Minimum Versions
 
@@ -12,6 +12,7 @@ This skill was reviewed against the Polpo OSS `0.17.2` source. Checked: `@polpo-
 | Channel management service and CLI | `0.15.109` (earliest checked) |
 | Channel suggestion buttons and lists | `0.17.1` |
 | Suggestions across several replicas (shared queue admission) | `0.17.2` |
+| Runtime hooks on Channel turns | `0.18.8` |
 
 ## If The Installed Version Differs
 

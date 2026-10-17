@@ -13,6 +13,8 @@ Polpo project layout version 2 stores one file or directory per resource.
 |   `-- customer-success.json
 |-- loops/
 |   `-- resolve-ticket.ts     # or .json
+|-- hooks/
+|   `-- guardrails.json       # runtime hook pack
 |-- skills/
 |   `-- support-playbook/     # complete skill bundle
 |       |-- SKILL.md
@@ -27,12 +29,13 @@ Polpo project layout version 2 stores one file or directory per resource.
 Other entries you may find: `missions/`, `playbooks/`, `tasks/`, `sessions/`, `avatars/`,
 `vault.enc` (encrypted credentials), `memory.md` and `memory/<agent>.md` (legacy static memory),
 `skills-index.json` (runtime tags and categories for skills), and `.env` (local provider keys,
-never committed).
+never committed). `polpo deploy` does not upload `vault.enc`, memory files, or `.env`.
 
 ## project.json
 
 `projectId` and `projectSlug` link the directory to a Cloud project; `polpo create` and
-`polpo link` write them. Runtime behaviour lives under `settings`, for example
+`polpo link` write them. No environment is stored here: Development or Production is chosen per
+command. Runtime behaviour lives under `settings`, for example
 `"storage": "postgres"`, `"guardrails": {"policyPack": "standard"}`, or
 `"contextTrust": "enforce"`.
 
@@ -70,6 +73,12 @@ add the legacy inline `loops` or `pipeline` agent fields to new projects.
 A skill is a whole directory, not only `SKILL.md`. Keep `references/`, `scripts/`, `assets/`,
 and binary files together. Install with `polpo skills add` so the lockfile records where each
 skill came from.
+
+## Hook Packs
+
+`.polpo/hooks/<name>.json` holds one pack whose `name` equals the file name. Agents opt in with
+a `hooks` array in `agent.json`. Packs are trusted project policy, so never put credentials in
+them; use a Connection for authenticated HTTP handlers. Details: [runtime-hooks.md](runtime-hooks.md).
 
 ## Custom Tools And Schedules
 

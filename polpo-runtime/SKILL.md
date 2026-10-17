@@ -1,6 +1,6 @@
 ---
 name: polpo-runtime
-description: Call and operate Polpo agents from application code with `@polpo-ai/sdk` or the OpenAI-compatible `/v1/chat/completions` API. Covers SDK setup, Sessions and conversation history, streaming and durable runs that survive disconnects, client-side tools and tool-result continuation, ask-user questions, suggestions and action buttons, structured JSON output, steering a running agent, Project Loops (`defineProjectLoop`), schedules, tasks and missions, guardrails, and application databases through `client.data()`. Use this whenever code calls a Polpo agent or a user debugs a Polpo run (lost stream, duplicated messages, tool call errors, a schedule that did not fire), even if they only say "call the agent from my backend". For agent configuration use polpo-agents; for React UI use polpo-react.
+description: Call and operate Polpo agents from application code with `@polpo-ai/sdk` or the OpenAI-compatible `/v1/chat/completions` API. Covers SDK setup, Sessions and conversation history, streaming and durable runs that survive disconnects, client-side tools and tool-result continuation, ask-user questions, suggestions and action buttons, structured JSON output, steering a running agent and reading steering receipts, targeting Development or Production, how runtime hooks affect responses, Project Loops (`defineProjectLoop`), schedules, tasks and missions, guardrails, and application databases through `client.data()`. Use this whenever code calls a Polpo agent or a user debugs a Polpo run (lost stream, duplicated messages, tool call errors, a schedule that did not fire), even if they only say "call the agent from my backend". For agent configuration use polpo-agents; for React UI use polpo-react.
 ---
 
 # Polpo Runtime
@@ -57,7 +57,10 @@ API key on the server. Browsers should go through your backend (see `polpo-react
   Set `parallel_tool_calls: false` when you send them.
 - An explicit Loop continuation keeps the Session and trusted user context but recalculates tool
   permissions for the Loop.
-- Steering messages are applied at the next safe point. They never interrupt a running tool.
+- Steering messages are applied at the next safe point and never interrupt a running tool. Check
+  the receipt: `admission` says whether it was taken, `delivery` whether the agent saw it.
+- Keep each Session, run, and pending tool call with the client (and environment) that created
+  it.
 - Application databases are separate from Sessions, Memory, and file volumes. Use them through
   `client.data()` with the server API key; agents get separate, narrower grants.
 
@@ -70,9 +73,13 @@ API key on the server. Browsers should go through your backend (see `polpo-react
   client tools, ask-user questions, suggestions, action buttons.
 - [references/structured-and-parallel.md](references/structured-and-parallel.md): JSON output and
   parallel tool calls.
+- [references/project-environments.md](references/project-environments.md): calling Development
+  or Production from the SDK.
 - [references/project-loops.md](references/project-loops.md): defining and running Loops.
 - [references/steering-and-runtime-plans.md](references/steering-and-runtime-plans.md): steering a
-  run and inspecting runtime decisions.
+  run, receipts, steering policy, and inspecting runtime decisions.
+- [references/runtime-hooks.md](references/runtime-hooks.md): how hook packs change what your app
+  sees (blocked tools, revised answers).
 - [references/schedules.md](references/schedules.md): cron and one-off schedules.
 - [references/tasks-and-missions.md](references/tasks-and-missions.md): picking the right primitive.
 - [references/context-trust-and-guardrails.md](references/context-trust-and-guardrails.md):
