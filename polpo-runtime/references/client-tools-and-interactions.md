@@ -40,6 +40,61 @@ The continuation appends exactly one matching tool result, reconstructs canonica
 preserves trusted identity. Retries with the same key and payload are idempotent. Changed payload,
 stale version, wrong scope, unknown call, or already-resolved call fails deterministically.
 
+## Settlement Without Continuation
+
+Use settlement when an application must close a pending client tool without asking the agent to
+continue. Settlement writes one canonical tool-result message and advances the Session version. It
+does not invoke a model, handler, tool executor, or Project Loop.
+
+Inspect before writing:
+
+```ts
+const resolution = await client.getClientToolResolution({
+  sessionId,
+  toolCallId,
+  agent: "leo",
+  user: externalUserId,
+});
+```
+
+The resolution is one of:
+
+- `pending`: no result and no continuation has been accepted;
+- `settled`: a settlement receipt already exists;
+- `continuation`: a continuation was durably accepted. Its `runId` identifies that continuation,
+  and `runStatus: "unknown"` means only that current Run observability was unavailable.
+
+Settle only `pending` calls. Use a stable idempotency key and the version returned by inspection:
+
+```ts
+if (resolution.status === "pending") {
+  await client.settleClientTool({
+    sessionId,
+    toolCallId,
+    agent: "leo",
+    user: externalUserId,
+    sessionVersion: resolution.sessionVersion,
+    idempotencyKey,
+    outcome: "cancelled",
+    reason: "The browser closed before returning a result",
+  });
+}
+```
+
+Outcomes are `success`, `failed`, and `cancelled`; success requires a result string. The runtime
+preserves the caller result inside a bounded model-visible JSON object. Failed and cancelled both
+retain the established history state `error`, while `settlementOutcome` distinguishes them;
+successful settlement uses state `completed`. There is no separate legacy tool state `cancelled`.
+
+Exact retries return the original receipt. A changed payload conflicts. Settlement cannot replace
+an accepted continuation and never accepts a caller-supplied Run ID. Agent and user are exact
+Session identity checks: omission means absent, never wildcard. In the SDK, `user: null` overrides
+a configured default to address a userless Session.
+
+The CLI equivalents are `polpo sessions tool-call` and `polpo sessions settle-tool-call`. They use
+the normal linked project and Development/Production selection, submit once, and do not continue
+the agent automatically.
+
 ## Ask User And Suggestions
 
 The agent controls whether interactions are permitted; the client opts into what it can render:

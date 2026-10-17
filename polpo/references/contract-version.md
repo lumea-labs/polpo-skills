@@ -73,3 +73,12 @@ depends on its tenant schema, host adapters and `runtime.hooks.mode` rollout.
 OSS `0.18.10` adds `polpo runs steer`, `polpo runs steering get`, and receipt-aware
 SDK/API control. Project targeting and Development/Production resolution use the
 same linked project and environment rules as the other Cloud CLI commands.
+
+## Client-tool recovery compatibility
+
+OSS `0.18.16` adds client-tool inspection and settlement through the runtime,
+SDK and CLI without executing the agent again. For recovery, use the
+[settlement contract](../../polpo-runtime/references/client-tools-and-interactions.md)
+and inspect installed host capabilities and Cloud rollout before writing.
+This release adds no new agent, Connection or Channel configuration; the
+feature-specific verification baselines above remain unchanged.

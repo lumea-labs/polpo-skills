@@ -60,3 +60,12 @@ contracts remain unchanged; managed Cloud availability is rollout-dependent.
 OSS `0.18.10` exposes steering through the SDK and authenticated Runs API. It adds
 no React-side execution authority; applications render receipt outcomes and keep
 the server authoritative when a local view of the safe boundary is stale.
+
+## Client-tool recovery compatibility
+
+OSS `0.18.16` adds client-tool inspection and settlement through the runtime,
+SDK and CLI without executing the agent again. For recovery, use the
+[settlement contract](../../polpo-runtime/references/client-tools-and-interactions.md)
+and inspect installed host capabilities and Cloud rollout before writing.
+This release adds no new agent, Connection or Channel configuration; the
+feature-specific verification baselines above remain unchanged.

@@ -37,3 +37,9 @@ Validate and normalize messages before provider conversion:
 
 Persist only a coherent canonical turn. Never allow a partial stream or provider-specific chunk
 to poison later Session history.
+
+When a request-scoped client tool remains unresolved, inspect its durable resolution rather than
+inferring state from the last browser response. Continue it when the agent must resume. Settle it
+when the application must record a terminal result without another generation. Both paths use the
+canonical Session version and a stable idempotency key; neither is a reason to splice a handcrafted
+assistant/tool pair into history.

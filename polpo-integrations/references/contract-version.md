@@ -82,3 +82,12 @@ hook pack or event envelope. Managed Cloud availability is rollout-dependent.
 OSS `0.18.10` does not change Connection, MCP, OAuth, or credential-broker contracts.
 Steering content is user input for an active Run and must never carry credentials
 or widen tool and Connection grants.
+
+## Client-tool recovery compatibility
+
+OSS `0.18.16` adds client-tool inspection and settlement through the runtime,
+SDK and CLI without executing the agent again. For recovery, use the
+[settlement contract](../../polpo-runtime/references/client-tools-and-interactions.md)
+and inspect installed host capabilities and Cloud rollout before writing.
+This release adds no new agent, Connection or Channel configuration; the
+feature-specific verification baselines above remain unchanged.

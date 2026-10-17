@@ -65,3 +65,12 @@ managed Cloud availability remains rollout-dependent.
 OSS `0.18.10` keeps Channel transport separate from Run steering admission. Channel
 turns may participate in the host's run-scoped steering policy, but this release
 adds no Channel definition field or provider-specific steering UI.
+
+## Client-tool recovery compatibility
+
+OSS `0.18.16` adds client-tool inspection and settlement through the runtime,
+SDK and CLI without executing the agent again. For recovery, use the
+[settlement contract](../../polpo-runtime/references/client-tools-and-interactions.md)
+and inspect installed host capabilities and Cloud rollout before writing.
+This release adds no new agent, Connection or Channel configuration; the
+feature-specific verification baselines above remain unchanged.
