@@ -69,3 +69,16 @@ SDK and CLI without executing the agent again. For recovery, use the
 and inspect installed host capabilities and Cloud rollout before writing.
 This release adds no new agent, Connection or Channel configuration; the
 feature-specific verification baselines above remain unchanged.
+
+
+## Termination gate compatibility
+
+The runtime-hardening baseline is OSS `0.18.17`. Opt-in same-agent termination
+validation requires the coherent OSS `0.18.18` package set and a serving host
+containing that implementation. A controlling `turn:stop` gate can return
+structured `continue` feedback while retaining authorized tools and conversation;
+explicit cycle/time/reported-token limits and durable checkpoint semantics apply.
+The ordinary hook contract above remains valid without a gate. Cloud additionally
+requires `managed.terminationGate.enabled`; do not infer availability from a
+package version alone. No new agent-directory, SDK transport or CLI deploy format
+is required: gate definitions live in the existing hook pack JSON.

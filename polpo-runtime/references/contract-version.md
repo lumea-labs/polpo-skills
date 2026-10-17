@@ -60,7 +60,7 @@ availability or migrate Live/Test state from names alone.
 Verified on **2026-10-17** against published OSS `0.18.8`. Runtime Hooks use a
 versioned, redacted envelope and deterministic decision composition across direct
 chat, Run-backed chat, Channels and Project Loop agent nodes. `tool:before` remains
-before side effects; `turn:stop` permits at most one tool-free feedback recovery.
+before side effects; `turn:stop` without an explicit termination gate permits at most one tool-free feedback recovery.
 Managed Cloud availability is rollout-dependent.
 
 ## Runtime Steering release contract
@@ -92,3 +92,16 @@ history reads also project settlement state. Hosts without the atomic store
 capability must reject writes rather than emulate them with a read-then-update
 sequence. Versioned API contract:
 <https://github.com/lumea-labs/polpo/blob/v0.18.16/docs/client-tool-settlement.md>.
+
+
+## Termination gate compatibility
+
+The runtime-hardening baseline is OSS `0.18.17`. Opt-in same-agent termination
+validation requires the coherent OSS `0.18.18` package set and a serving host
+containing that implementation. A controlling `turn:stop` gate can return
+structured `continue` feedback while retaining authorized tools and conversation;
+explicit cycle/time/reported-token limits and durable checkpoint semantics apply.
+The ordinary hook contract above remains valid without a gate. Cloud additionally
+requires `managed.terminationGate.enabled`; do not infer availability from a
+package version alone. No new agent-directory, SDK transport or CLI deploy format
+is required: gate definitions live in the existing hook pack JSON.
