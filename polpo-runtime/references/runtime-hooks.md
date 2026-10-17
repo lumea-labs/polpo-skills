@@ -77,6 +77,11 @@ model/tool operation is marked `termination_gate_effect_unconfirmed`: it require
 reconciliation and never blindly repeats the operation. Validators must honor their
 idempotency key because an external effect can precede its ledger write.
 
+Managed repair cycles retain the active sandbox lease for the current invocation. A checkpoint
+persists conversation and validation state; it is not a snapshot of an arbitrary sandbox.
+Recovery after loss of the worker or sandbox still requires the host to restore the working
+copy and reconcile uncertain effects. This feature does not add automatic crash retries.
+
 Direct HTTP chat supports continuation during the request, but has no crash-resume promise.
 Parallel graph branches do not yet have individual durable checkpoints: a durable gate in
 such a branch is rejected before inference. Client-tool handoff remains a handoff and does
