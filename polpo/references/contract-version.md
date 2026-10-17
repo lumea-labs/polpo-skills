@@ -70,6 +70,6 @@ depends on its tenant schema, host adapters and `runtime.hooks.mode` rollout.
 
 ## Runtime Steering release contract
 
-OSS `0.18.9` adds `polpo runs steer`, `polpo runs steering get`, and receipt-aware
+OSS `0.18.10` adds `polpo runs steer`, `polpo runs steering get`, and receipt-aware
 SDK/API control. Project targeting and Development/Production resolution use the
 same linked project and environment rules as the other Cloud CLI commands.

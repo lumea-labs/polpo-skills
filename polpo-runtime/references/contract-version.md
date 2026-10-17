@@ -65,9 +65,11 @@ Managed Cloud availability is rollout-dependent.
 
 ## Runtime Steering release contract
 
-Verified on **2026-10-17** against OSS `0.18.9`. Steering exposes separate
+Verified on **2026-10-17** against OSS `0.18.10`. Steering exposes separate
 admission and delivery receipts, BCP 47 localized reject/too-late outcomes,
 policy resolution across Project Loop node/loop/agent/project/platform scopes,
 and public API, SDK, and CLI receipt lookup. Managed Cloud must use durable
 tenant/project/environment-scoped storage before acknowledging a message; an
-in-memory OSS registry alone does not provide cross-replica delivery.
+in-memory OSS registry alone does not provide cross-replica delivery. Terminal
+Project Loop transitions seal the queue atomically so concurrent ingress is
+either durably accepted and settled or reported as too late.

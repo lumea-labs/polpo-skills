@@ -79,6 +79,6 @@ hook pack or event envelope. Managed Cloud availability is rollout-dependent.
 
 ## Runtime Steering release contract
 
-OSS `0.18.9` does not change Connection, MCP, OAuth, or credential-broker contracts.
+OSS `0.18.10` does not change Connection, MCP, OAuth, or credential-broker contracts.
 Steering content is user input for an active Run and must never carry credentials
 or widen tool and Connection grants.

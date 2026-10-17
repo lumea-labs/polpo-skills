@@ -62,6 +62,6 @@ managed Cloud availability remains rollout-dependent.
 
 ## Runtime Steering release contract
 
-OSS `0.18.9` keeps Channel transport separate from Run steering admission. Channel
+OSS `0.18.10` keeps Channel transport separate from Run steering admission. Channel
 turns may participate in the host's run-scoped steering policy, but this release
 adds no Channel definition field or provider-specific steering UI.
