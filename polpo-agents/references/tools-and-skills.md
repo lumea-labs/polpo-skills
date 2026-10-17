@@ -53,3 +53,12 @@ resource. Do not tell the model to use general workspace `read` for skill intern
 Per-request `polpo.skills` activation is additive and ephemeral. It prioritizes assigned skills
 for one execution without removing other assigned skills or changing the agent. Reject a
 requested skill that is not assigned to the effective agent or Loop.
+
+## Pre-completion validation
+
+With OSS `0.18.18` or later (and enabled Cloud capabilities), assign a pack with a controlling `turn:stop` hook and
+`terminationGate: { maxCycles, maxDurationMs, maxTokens }`. The validator returns
+`decision: { action: "continue", feedback: <structured diagnostics> }` or explicit `allow`.
+Authorized tools remain available; no extra repair node or Session is created. Include the
+validator in tool policy. See `polpo-runtime/references/runtime-hooks.md` for persistence,
+limits and Cloud rollout checks. Never assume ordinary stop feedback enables tool repair.
