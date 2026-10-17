@@ -10,9 +10,11 @@ authoring). This page explains what an application calling the agent will see.
 - A block on `input:before`, `model:*`, `agent:spawn`, or `sandbox:start` fails the turn with an
   error. A block on a Loop event stops the Loop.
 - A `turn:stop` hook can ask for one revision: the agent gets one extra model call without tools
-  and the answer you receive is the revised one. Expect slightly longer latency on those turns.
-  Structured-output requests skip this step.
+  and its correction is **appended** to the original answer (also streamed after it), separated
+  by a blank line. Do not assume the final text replaces the first draft. Expect slightly longer
+  latency on those turns; structured-output requests skip this step.
 - `ask` and `defer` currently block like `deny`; they do not create an approval you can answer.
 
 When a user reports "the agent refused" or "the tool always errors", check the agent's `hooks`
-and the hook trace (`runtime:hook` events) before changing prompts or tools.
+and the host's hook trace (where the host exposes it) before changing prompts or tools. The
+stock self-hosted server does not stream hook traces to clients.

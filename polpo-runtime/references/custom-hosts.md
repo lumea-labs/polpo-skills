@@ -25,10 +25,13 @@ receipts still readable after the run's owner exits.
 
 ## Runtime Hooks
 
-Embed the server with a `runtimeHookHost` to support `tool`, `mcp_tool`, `prompt`, `agent`, and
-Connection-authenticated `http` handlers (`resolveHttpHeaders`). For durable replay, provide
+Pass `runtimeHookHost` to `createApp` (it is not a `PolpoServer` option) to support `tool`,
+`mcp_tool`, `prompt`, `agent`, and Connection-authenticated `http` handlers. Build it with
+`createNodeRuntimeHookHost({ shell, cwd, resolveHttpHeaders, findCompleted, trace })` and your
+adapters; it replaces the default host entirely. For durable replay, provide
 `findCompleted` so a resumed run reuses stored hook decisions instead of re-running handlers.
-Return real handler support from the capabilities route instead of the portable default.
+The stock `/hooks/capabilities` route always reports the portable contract; to advertise your
+real handler support, mount `runtimeHookRoutes({ capabilities })` yourself.
 
 ## Schedules
 

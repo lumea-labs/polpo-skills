@@ -26,7 +26,8 @@ if (result.receipt.admission === "accepted" && result.receipt.delivery === "pend
   different content it is rejected.
 - CLI: `polpo runs steer <run-id> --message "..." [--mode follow_up] [--locale it-IT]`,
   `polpo runs steering get <run-id> <message-id>`, `polpo runs abort <run-id>`.
-- HTTP: `POST /v1/runs/{runId}/steering`, `GET /v1/runs/{runId}/steering/{messageId}`.
+- HTTP: `POST /v1/runs/{runId}/steering`, `GET /v1/runs/{runId}/steering/{messageId}` (Cloud;
+  `/api/v1/runs/...` on a self-hosted server).
 
 ### Receipts
 

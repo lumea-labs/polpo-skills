@@ -45,8 +45,9 @@ the user to commit or back up local `.polpo/` changes before linking.
 `polpo deploy` scans `.polpo/` and deploys in this order: teams, skills, hook packs, custom
 tools, Loops, agents, missions, playbooks, schedules, avatars, and then tasks or sessions only
 when `--include-tasks`, `--include-sessions`, or `--all` is passed. It does not upload memory,
-vault credentials, or model keys; set those per environment. Removing a hook pack locally does
-not delete it remotely. `-f` overwrites
+vault credentials, or model keys; set those per environment. Hook packs are always overwritten
+(no conflict prompt), one invalid pack fails the hooks step, and removing a pack locally does not
+delete it remotely. `-f` overwrites
 conflicting Cloud resources without asking; use it only when the user wants local files to win.
 
 Before deploying:

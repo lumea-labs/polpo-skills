@@ -129,9 +129,8 @@ The remote Cloud MCP and builder expose the same 14 account tools:
 - `polpo_databases_backend_get`, `polpo_databases_agent_grants_list`,
   `polpo_databases_agent_grants_set`.
 
-All take `projectId` and an `environment`: `development` or `production` on projects with
-environments, `live` or `test` on older ones. Pass it explicitly rather than relying on the
-default.
+All take `projectId` and an `environment` (`development` or `production`). Pass it explicitly
+rather than relying on the default.
 Resource operations take `resource` (UUID or logical name). Create, rename, additive
 migrate, transaction, query, mutate and SQL migrate take their canonical API payload
 inside `input`; delete takes `expectedVersion` directly. Grant replacement takes

@@ -34,7 +34,7 @@ service's `environment:` block as well as to `.env`.
 | `POLPO_MODEL` | Default model ID, for example `openai/gpt-5`. |
 | `AI_GATEWAY_API_KEY` (or a provider key) | Model access. Change it together with `POLPO_MODEL`. |
 | `PORT`, `HOST`, `WORK_DIR`, `CORS_ORIGINS` | Server binding, project directory, and allowed browser origins. |
-| `POLPO_PROJECT_ENVIRONMENT` | `development` or `production`: labels this process. Run a separate server, work directory, database, and keys per environment. |
+| `POLPO_PROJECT_ENVIRONMENT` | `development` or `production`. Required before using CLI `0.17.3` or later against this server: the CLI always calls `/environments/<name>/...`, which an unbound server answers with 404 `ENVIRONMENT_NOT_FOUND`. Run a separate server, work directory, database, and keys per environment. |
 | `POLPO_DATA_DATABASE_URL` | Separate PostgreSQL for application databases (owner needs `CREATEROLE`). Without it, Data is off. |
 | `POLPO_DATA_AGENT_GRANTS` | JSON map of agent to database grants (see `polpo-agents`). |
 
@@ -65,7 +65,7 @@ Minimal `.polpo/project.json`:
 - **Schedules** (`.polpo/schedules`) need a schedule service and driver that the stock server
   does not wire; only legacy mission schedules work out of the box.
 - **Runtime hooks** run for agents that list them, but only `command` and `http` (without a
-  Connection) handlers work unless you embed the server and pass a `runtimeHookHost`.
+  Connection) handlers work unless you embed the runtime with `createApp(..., { runtimeHookHost })`.
 - **Steering receipts** are kept in memory by one process; several replicas need a shared,
   durable steering store.
 - **Sandboxes.** Cloud runs tools in managed sandboxes with volumes. A self-hosted runtime runs

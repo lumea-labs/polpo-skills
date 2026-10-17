@@ -74,15 +74,18 @@ Controlling hooks run one after another by scope, priority, then file order; the
 | Event | What a decision does |
 |---|---|
 | `tool:before` | `deny`/`ask`/`defer`/`stop` block the call (the model sees an error result). `modify` with `data.input` replaces the arguments before normal authorization and schema validation. |
-| `tool:after`, `tool:error` | `modify` with `data.result` (string) replaces what the model sees. |
-| `input:before` | Blocking decisions fail the turn. `modify` with `data.context` (string) adds text to the system prompt. |
-| `model:before`, `model:after`, `model:switch:before`, `model:switch:after`, `agent:spawn`, `sandbox:start` | Blocking decisions fail the turn. |
+| `tool:after`, `tool:error` | `modify` with `data.result` (string) replaces what the model sees; a blocking decision replaces it with `Error: Runtime hook <action>: <reason>`. `tool:error` fires for error results; when the tool throws, its decision is ignored. |
+| `input:before` | Blocking decisions fail the turn. In chat, `modify` with `data.context` (string) adds text to the system prompt; inside Loop agent nodes that context is not applied. |
+| `model:before`, `model:after`, `model:switch:before`, `model:switch:after`, `sandbox:start` | Blocking decisions fail the turn. |
+| `agent:spawn` | Blocking decisions fail the turn in chat and Loops; inside a Loop agent node the decision is ignored. |
 | `loop:start`, `step:before`, `loop:transition`, `step:after`, `loop:end` | Blocking decisions stop the Project Loop. |
-| `turn:stop` | `stop` with a non-empty `feedback` runs one extra model call without tools to revise the answer, then checks again; a second failure fails the turn. Skipped for structured output. |
+| `turn:stop` | `deny`/`ask`/`defer` fail the turn. `stop` without feedback does nothing. `stop` with a non-empty `feedback` runs one extra model call without tools; its text is **appended** to the original answer. The hook is then called again: `deny`/`ask`/`defer` fail the turn, another `stop` is ignored. Skipped for structured output. |
 
-Other events (`session:*`, `run:*`, `turn:error`, `agent:end`, `context:compact:*`,
-`tool:batch:after`, `sandbox:file_changed`, `sandbox:end`, `approval:request`, `loop:stop`)
-are notifications: decisions are ignored, so use `mode: "observe"`.
+Other events (`session:*`, `run:*`, `turn:error`, `model:error`, `agent:end`,
+`context:compact:*`, `tool:batch:after`, `sandbox:file_changed`, `sandbox:end`,
+`approval:request`, `loop:stop`) are notifications: decisions are ignored, so use
+`mode: "observe"`. `approval:denied` and `sandbox:cwd_changed` are in the catalog but are not
+emitted yet.
 
 `ask` and `defer` currently behave like `deny`; they do not open an approval prompt. The
 `turn:stop` data has the answer's length and tool-call count, not its text.
@@ -116,12 +119,16 @@ resumed run can deliver the same event again.
 
 - **Self-hosted (stock server):** hooks run automatically for agents that list them, but only
   `command` and `http` without `connection` work. `tool`, `mcp_tool`, `prompt`, `agent`, and
-  `http` with a `connection` need host adapters (`runtimeHookHost` when embedding the server);
+  `http` with a `connection` need host adapters (see Embedding below);
   without them the handler fails, which with `onFailure: "continue"` silently allows. The stock
   `GET /api/v1/hooks/capabilities` lists the whole contract, not the adapters you configured, so
   test each handler with a real run.
 - **Polpo Cloud:** availability depends on the project's rollout. Check `polpo hooks list` and a
   real run before relying on a handler type.
-- `polpo hooks validate` checks the schema only. A `tool:before` hook that denies a
+- `polpo hooks validate` checks the schema only, and one invalid pack fails the whole hooks
+  step of `polpo deploy`. Hook packs are always overwritten on deploy (no conflict prompt).
+- Embedding: use `createApp(orchestrator, sseBridge, { runtimeHookHost })` from `@polpo-ai/node`
+  (not `PolpoServer`) with a host built by `createNodeRuntimeHookHost({ shell, cwd, resolveHttpHeaders, ... })`
+  plus your adapters. A custom host replaces the default `command`/`http` host entirely. A `tool:before` hook that denies a
   provider-executed native tool cannot stop it, because the provider runs it; control requires a
   locally executed Polpo or Connection tool.

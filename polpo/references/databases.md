@@ -75,9 +75,8 @@ without it, Data is unavailable. For CLI calls use a server-side `POLPO_API_KEY`
 
 Cloud provisions the managed application database on Neon and keeps provider credentials.
 Applications call Polpo's API using their normal Polpo key with full Data access
-inside its existing organization/project scope. Each environment has its own databases: on
-projects with environments, `polpo data` targets Development unless you pass `--prod`; on older
-projects the key's Live or Test environment decides. The managed feature must
+inside its existing organization/project scope. Each environment has its own databases, and `polpo data` targets Development unless you pass
+`--prod`. The managed feature must
 also be enabled by the host rollout configuration. Resources sharing a Neon branch share
 compute and backup/restore lifecycle; do not promise independent per-resource restore.
 
@@ -93,5 +92,5 @@ host configuration; the dashboard does not simulate Cloud grant endpoints.
 
 If you have the Polpo Cloud MCP server connected, its `polpo_databases_*` tools do the same
 administration as the signed-in account (pass `projectId`).
-Pass `environment` explicitly (`development`/`production`, or `live`/`test` on older projects).
+Pass `environment` (`development` or `production`) explicitly.
 They are separate from the grant-limited `database_*` tools that agents use.

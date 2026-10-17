@@ -6,8 +6,8 @@ with its own state, database, files, sandbox, settings, Connections, and credent
 shared.
 
 Requires CLI and SDK `0.17.3` or later, and a Cloud project that has been moved to environments.
-Older Cloud projects still use Live/Test keys (`sk_live_...`, `sk_test_...`) and do not accept
-environment flags; see "Old Live/Test projects" below.
+CLI `0.17.3` and later always targets an environment, so it needs an environment key (or a
+`mixed` key with `--prod`); see "Old Live/Test projects" below.
 
 ## CLI
 
@@ -46,8 +46,9 @@ Connections, Channels. Data has no separate key.
 
 - `polpo login --api-key <key>` reports which environment the key belongs to. A Production key
   still needs `--prod` on each command.
-- `polpo link` reuses an existing key for the chosen environment or creates one, and writes
-  `.env.local` only if it does not exist yet.
+- `polpo link` reuses your logged-in key for that environment without writing anything. If it
+  has to create a key, it writes `.env.local` when the file does not exist; otherwise it prints
+  the new key in the terminal, so keep that output private.
 
 ## SDK, React, MCP
 
@@ -59,14 +60,15 @@ remote MCP server defaults to Development; use `/environments/production/v1/mcp`
 
 Run one server per environment, each with its own `WORK_DIR`, database, and keys, and declare
 which one it is with `POLPO_PROJECT_ENVIRONMENT=development|production` (or
-`environment` in `PolpoServer`). The setting only labels the process; it does not create the
-separate resources. Requests to `/environments/<name>/...` are rejected unless they match the
-process's environment.
+`environment` in `PolpoServer`). Set it before pointing CLI `0.17.3` or later at the server: the
+CLI always calls `/environments/<name>/...`, and an unbound server or one bound to the other
+environment answers 404. The setting does not create the separate resources for you.
 
 ## Old Live/Test Projects
 
-On projects not yet moved to environments, `live` and `test` keys and the Data environments
-`live`/`test` still apply. Do not rename Live to Production or move Test data to Development
-yourself: a Test key used a shared agent runtime with separate Test data, so there is no exact
-equivalent. The Cloud migration handles that. `polpo link` rejects legacy keys for environment
-targeting.
+Projects not yet moved to environments still use `sk_live_`/`sk_test_` keys. CLI `0.17.3` and
+later reports them as `legacy` and `polpo deploy` and `polpo link` reject them; a `mixed` key works
+only with `--prod` on a project already bound to Production. Do not rename Live to Production or
+move Test data to Development yourself: a Test key used a shared agent runtime with separate Test
+data, so there is no exact equivalent. The Cloud migration handles that; until then, use an older
+CLI or ask for the project to be migrated.
