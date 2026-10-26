@@ -43,3 +43,11 @@ inferring state from the last browser response. Continue it when the agent must 
 when the application must record a terminal result without another generation. Both paths use the
 canonical Session version and a stable idempotency key; neither is a reason to splice a handcrafted
 assistant/tool pair into history.
+
+## Automatic titles and live metadata
+
+A new conversation is named asynchronously from its first persisted user message. An open completion stream may include `polpo.session` with `id`, `title`, `titleSource`, `titleRevision`, `titleUpdatedAt`, `titleGenerationStatus`. Its assistant delta is empty: do not append the title to response text. Project SSE emits `session:updated` with `{ session }`. A title finishing after `[DONE]` is persisted, never appended to the closed stream/journal.
+
+Use `client.getSessionMetadata(id)` (`GET /v1/chat/sessions/{id}`) or `client.watchSessionTitle(id, callback)` for late updates. The latter deduplicates reads, backs off, and stops on terminal state, auth failure, deletion, unsubscribe or 60s. Keep client/project/environment scope fixed and unsubscribe on navigation. Only apply newer `titleRevision`; it is independent of transcript `version`.
+
+`client.renameSession(id, title, expectedTitleRevision?)` returns `{ renamed: true, session }`. A manual rename wins even when identical to the provisional string; revision mismatch returns `409 SESSION_TITLE_REVISION_CONFLICT`. Titles do not represent Run status. Title failure leaves the fallback and never fails the main completion. Standard auxiliary model usage applies without another agent Run.

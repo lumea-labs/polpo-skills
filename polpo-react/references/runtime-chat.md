@@ -81,3 +81,7 @@ compose existing controls around `useChat`, preserving order and disabling selec
 busy. Display `label`, send the exact `prompt` only for a message, open a validated link only
 on selection, and dispatch postbacks through an explicit application callback. Neither the
 shared `Chat` nor Playground adapters gain this wiring from the SDK version bump alone.
+
+## Automatic Session title updates
+
+`useChat({ onSessionUpdated: snapshot => ... })` merges `polpo.session` metadata and performs bounded metadata readback if naming finishes after the stream. `useSessions()` merges title revisions into its shared store and watches pending titles. Manual renames use the server receipt; stale list/history responses must not overwrite a newer title revision. Do not render title events as assistant messages or keep the completion stream open while waiting. Keep hooks under the correctly scoped Polpo provider; custom clients can call `watchSessionTitle` and must unsubscribe on unmount/scope changes. Older servers omit the metadata, and the watcher stops without endless polling.

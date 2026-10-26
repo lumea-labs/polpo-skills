@@ -59,3 +59,9 @@ arrival.
 
 Set `team` in `agent.json` when the agent belongs to a non-default team. The team file contains
 team metadata; membership is derived from agent definitions.
+
+## Automatic Session titles
+
+`agent.json` accepts `sessionTitles: { enabled, model, language, maxLength, maxOutputTokens, timeoutMs }`. Each field inherits independently from project/host defaults; null clears an override and false disables naming. Without an explicit model, naming uses the concrete first-turn conversational model. Local defaults live in `.polpo/project.json` under `settings.sessionTitles`; managed defaults use the project/environment settings API under `runtime.sessionTitles`. Agent settings survive deploy/pull.
+
+Naming starts asynchronously after the first persisted user message, even a greeting. It is a separate tool-free call, without agent instructions/history/memory/reasoning/sandbox. Defaults: enabled, auto language, 80 characters, 128 output tokens, 5s; hard caps 200/512/15s and at most two attempts within 60s. Manual/imported/existing titles are protected. Do not implement naming by adding a chat tool or a Loop step.
