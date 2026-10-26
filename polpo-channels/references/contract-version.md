@@ -87,3 +87,13 @@ The ordinary hook contract above remains valid without a gate. Cloud additionall
 requires `managed.terminationGate.enabled`; do not infer availability from a
 package version alone. No new agent-directory, SDK transport or CLI deploy format
 is required: gate definitions live in the existing hook pack JSON.
+
+
+## Automatic Session titles contract
+
+OSS `0.18.21` adds asynchronous titles for new conversational Sessions, optional
+host/project/agent overrides, revision-aware metadata events/readback and manual
+rename protection. The previous serving baseline was `0.18.20`; these additions
+require the new coherent package set and Cloud rollout. The title contract was
+verified on 2026-10-26 through route, storage, SDK/React and browser tests.
+This entry does not re-certify unrelated historical feature notes above.

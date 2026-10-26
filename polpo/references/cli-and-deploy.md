@@ -78,3 +78,9 @@ including references, scripts, assets, and binary resources.
   action and setup URL instead of reporting the resource active.
 - Database reconciliation and package release are separate from project deployment. Run them
   only when the changed contract requires them.
+
+## Session names
+
+Automatic titles are configured through `sessionTitles` in `.polpo/agents/<name>/agent.json`; `polpo deploy` and `polpo pull` preserve that field. Local project defaults use `settings.sessionTitles` in `.polpo/project.json`. Managed project defaults are set separately through the project/environment settings API under `runtime.sessionTitles`; do not assume deploy copies local project defaults.
+
+Use `polpo sessions show SESSION_ID --prod` to inspect metadata only. Use `polpo sessions rename SESSION_ID 'Manual title' --title-revision N --prod` for a guarded rename. Without `--prod`, normal CLI development targeting applies. Title revision differs from Session transcript version; conflicts must be re-read rather than blindly retried.
